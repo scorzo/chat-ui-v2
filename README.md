@@ -1,44 +1,26 @@
-# README Script for using OpenAI's Assistants API with Integrated Personalized Profile via OpenAI Assistants API File Upload
+# A talk-to-your data assistant
 
 ## Overview:
-This script uses OpenAI's Assistants API for function calling as well as managing threads and messages. It integrates with Google Calendar API to schedule events and employs GPT-4 to process natural language scheduling requests.
+Closed source model-based chatbot that can be used to talk to your data.  
 
 ## Setup
 
 Install Required Libraries:
 
-Ensure you have the Google API Client Library for Python installed.
-
-    pip install --upgrade google-auth-oauthlib google-auth-httplib2 google-api-python-client
-
-Install pytz timezone library:
-    
-    pip install pytz
-
-Install OpenAI client libraries:
-
-    pip install openai
-
-Install API client libraries:
-
-    pip install Flask flask-cors
+    pip install -r requirements.txt
 
 Install React libs 
 
     cd chat-app/
-    npm install axios slick-carousel react-slick
+    npm install
 
-
-
-
-## Usage
-This script can be run in two modes: Command Line Interface (CLI) mode and API mode.
+## Backend Usage
+Backend script can be run in either CLI or API mode.
 
 ### CLI Mode
 To run the script in CLI mode, use the following command:
 
     python api/chat_api.py --mode cli
-
 
 In CLI mode, the script will execute the functionality defined in the main() function.
 
@@ -84,14 +66,12 @@ Visit this URL in your web browser or use a tool like curl or Postman to interac
      -H "Content-Type: application/json" \
      -d '{"upload_files": ["./character_Alexandra_Hamilton_2024_04_17_v1.json"]}'
 
-### Chat App
+### Chat App (Frontend)
 
 To run a React browser-based app on port 3000:
 
     cd chat-app
     npm start
-
-
 
 The script interactively prompts for event scheduling commands (e.g., "Schedule a meeting with John on January 10 at 10 am") and processes these requests to add events to your Google Calendar.  The script considers information gathered from a personalized profile to provide more personalized responses.
 
@@ -102,6 +82,6 @@ Note: Ensure that you have the necessary permissions and correct calendar ID bef
 Commands to Start
 Navigate to the root directory (where the docker-compose.yml file is located).
 
-Run Docker Compose to build and start the containers:
+Run Docker Compose to build and start the front-end and back-end containers:
 
     docker-compose up --build
