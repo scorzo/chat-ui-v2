@@ -1,0 +1,30 @@
+/* InsuranceRecordsModalContent.css - Additional styles for insurance-themed modal */
+
+.insurance-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.add-insurance-section .card-content input,
+.add-insurance-section .card-content textarea,
+.add-insurance-section .card-content select {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 1em;
+}
+
+.add-insurance-section .card-content button {
+    background-color: #3498db;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-insurance-section .card-content button:hover {
+    background-color: #2980b9;
+}

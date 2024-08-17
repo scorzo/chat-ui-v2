@@ -1,0 +1,48 @@
+/* MealPlanningModalContent.css - Additional styles for meal planning themed modal */
+
+.icon {
+    margin-right: 10px;
+    vertical-align: middle;
+    font-size: 1.5em; /* Adjust the size as needed */
+    width: auto;
+    height: auto;
+    display: inline-block; /* Ensure it doesn't stretch */
+}
+
+.section {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.item {
+    margin-bottom: 10px;
+}
+
+h2 {
+    display: flex;
+    align-items: center;
+    font-size: 1.5em;
+    color: #2980b9;
+}
+
+.insights {
+    width: 100%;
+    height: 100px; /* Adjust the height as needed */
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    resize: none; /* Prevent resizing */
+    font-size: 1em;
+    color: #333;
+}
+
+.menu-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover; /* Ensures the image covers the area without distorting */
+    border-radius: 5px;
+    margin-top: 10px;
+}

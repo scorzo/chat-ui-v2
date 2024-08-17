@@ -1,0 +1,85 @@
+/* General dark theme setup */
+.threads-container {
+    color: #E0E0E0;             /* Light grey text color for readability */
+    height: 100%;               /* Full height */
+    box-sizing: border-box;     /* Include padding in height */
+    display: flex;
+    flex-direction: column;
+}
+
+.threads-header {
+    margin-bottom: 20px;       /* Space below the header */
+}
+
+.threads-header h2 a {
+    color: #E0E0E0;              /* Light grey color for clickable header */
+    text-decoration: none;       /* No underline */
+    cursor: pointer;             /* Pointer cursor to indicate clickable */
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.threads-header h2 a:hover {
+    text-decoration: underline; /* Underline on hover for clarity */
+}
+
+.threads-header h2 a svg {
+    margin-right: 8px;           /* Space between icon and text */
+}
+
+.thread-list {
+    color: #fff;                 /* White text color for readability */
+    overflow-y: auto;
+    flex-grow: 1;                /* Allow list to grow and fill available space */
+    border-radius: 8px;
+}
+
+.thread-list ul {
+    list-style: none;            /* Remove bullets */
+    padding: 0;                  /* Remove default padding */
+    margin: 0;                   /* Remove default margin */
+}
+
+.thread-item {
+    background: none;            /* No background */
+    padding: 10px;               /* Vertical padding */
+    border-bottom: 1px solid #444;/* Bottom border for separation */
+    text-align: left;            /* Left alignment of text */
+    display: block;              /* Block display for full-width click area */
+    color: #E0E0E0;              /* Light grey color for links */
+    text-decoration: none;       /* No underline */
+    position: relative;
+}
+
+.thread-item:hover {
+    background: #444;            /* Darker background on hover */
+    cursor: pointer;             /* Pointer cursor to indicate clickable */
+}
+
+.thread-item.active {
+    background: #1A73E8;         /* Highlight color for active thread */
+    color: #fff;                 /* White text color for active thread */
+}
+
+.thread-item.active:hover {
+    background: #1669C1;         /* Slightly darker highlight on hover */
+}
+
+.thread-item-text {
+    display: inline-block;
+    width: calc(100%);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.thread-item-text::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 100%;
+    background: linear-gradient(to right, rgba(36, 36, 36, 0), rgba(36, 36, 36, 1));
+}

@@ -1,0 +1,142 @@
+/* FloatingChatWindow.css */
+.FloatingChatWindow {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 500px; /* Adjust the width as needed */
+    height: 100%; /* Full height */
+    overflow-y: auto; /* Vertical scrolling for content */
+    background-color: rgba(51, 51, 51, 0.15); /* Dark background for chat window with 15% opacity */
+    border-left: 1px solid #333; /* Dark border for chat window */
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+    z-index: 999; /* Ensure it's above other content */
+    display: flex;
+    flex-direction: column;
+    color: #e0e0e0; /* Light text color for readability */
+    font-family: 'Roboto', sans-serif;
+}
+
+.FloatingChatWindow .header {
+    background-color: rgba(51, 51, 51, 0.15); /* Dark background for the header with 15% opacity */
+    padding: 10px; /* Padding for the header */
+    color: #fff; /* White text color for readability */
+    text-align: right; /* Center the header text */
+    font-weight: bold; /* Bold font for the header */
+    margin-bottom: 0;
+}
+
+.FloatingChatWindow .messages {
+    flex-grow: 1; /* Allow messages to fill remaining space */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 20px; /* Padding for better spacing */
+    display: flex; /* Use flex layout */
+    flex-direction: column; /* Stack messages vertically */
+    background-color: rgba(51, 51, 51, 0.15); /* Dark background for messages container with 15% opacity */
+}
+
+.FloatingChatWindow .message {
+    background-color: rgba(66, 66, 66, 0.85); /* Dark grey for messages */
+    color: #fff; /* White text color for readability */
+    border-radius: 10px; /* Rounded corners for message boxes */
+    padding: 10px 15px; /* Padding inside messages */
+    margin-bottom: 10px; /* Space between messages */
+    max-width: 80%; /* Max width for better readability */
+    text-align: left; /* Left justify all text within the messages */
+}
+
+.FloatingChatWindow .message.right {
+    background-color: rgba(0, 123, 255, 0.85); /* Blue background for user messages */
+    color: #fff; /* White text color for readability */
+    align-self: flex-end; /* Align user messages to the right */
+}
+
+.FloatingChatWindow .message.left {
+    background-color: rgba(66, 66, 66, 0.85); /* Dark grey for assistant messages */
+    color: #fff; /* White text color for readability */
+    align-self: flex-start; /* Align assistant messages to the left */
+}
+
+.FloatingChatWindow .input-container {
+    display: flex; /* Flex layout for input and button */
+    align-items: flex-end; /* Align items at the bottom */
+    padding: 10px 20px; /* Padding for better spacing */
+    background-color: rgba(66, 66, 66, 0.15); /* Dark background for input container with 15% opacity */
+    border-top: 1px solid #333; /* Top border to separate from messages */
+}
+
+.FloatingChatWindow .input-container .rce-input-wrapper {
+    flex-grow: 1; /* Allow the input to fill the space */
+    position: relative;
+}
+
+.FloatingChatWindow .input-container textarea {
+    width: 100%; /* Full width */
+    padding: 10px 15px; /* Padding inside the input */
+    border: none; /* Remove border */
+    background-color: rgba(51, 51, 51, 0.15); /* Dark background for input with 15% opacity */
+    color: #fff; /* White text color for readability */
+    border-radius: 4px; /* Rounded corners for input */
+    outline: none; /* Remove default outline */
+    font-size: 16px; /* Font size for input */
+    font-family: 'Roboto', sans-serif;
+    resize: none; /* Prevent manual resizing */
+    overflow: hidden; /* Hide overflow */
+    line-height: 1.5; /* Line height for readability */
+    box-sizing: border-box; /* Ensure padding is included in the height */
+    min-height: 40px; /* Minimum height */
+    max-height: 150px; /* Set a maximum height */
+}
+
+/* Adjust textarea height dynamically */
+.FloatingChatWindow .input-container textarea:focus {
+    height: auto; /* Allow height to adjust automatically */
+    min-height: 40px; /* Set a minimum height */
+    max-height: 150px; /* Set a maximum height */
+}
+
+/* Floating label effect */
+.FloatingChatWindow .input-container input:focus + .rce-floating-label,
+.FloatingChatWindow .input-container textarea:focus + .rce-floating-label,
+.FloatingChatWindow .input-container input:not(:placeholder-shown) + .rce-floating-label,
+.FloatingChatWindow .input-container textarea:not(:placeholder-shown) + .rce-floating-label {
+    top: -20px; /* Raise the label */
+    font-size: 12px; /* Smaller font size */
+    color: #ff5722; /* Primary color for label */
+}
+
+.FloatingChatWindow .input-container .rce-floating-label {
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    font-size: 14px;
+    color: #aaa;
+    pointer-events: none;
+    transition: 0.2s ease all;
+}
+
+.FloatingChatWindow .input-container button {
+    background-color: #ff5722; /* Primary color for button */
+    color: white; /* White text color for readability */
+    border: none; /* No borders */
+    padding: 10px 20px; /* Padding around the text */
+    margin-left: 10px; /* Space between input and button */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition for hover effects */
+    align-self: flex-end; /* Ensure button stays at the bottom */
+}
+
+/* Hover effect for the button to make it darker when hovered */
+.FloatingChatWindow .input-container button:hover {
+    background-color: #e64a19; /* Darker shade of the primary color on hover */
+}
+
+/* Style for links in messages */
+.FloatingChatWindow .message a {
+    color: #00aaff; /* Light blue color for links */
+    text-decoration: none; /* Remove underline from links */
+}
+
+.FloatingChatWindow .message a:hover {
+    text-decoration: underline; /* Underline on hover for better visibility */
+}

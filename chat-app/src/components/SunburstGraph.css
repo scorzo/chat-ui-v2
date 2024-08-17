@@ -1,0 +1,68 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.NodeGraph-container {
+    display: flex;
+    height: 100vh;
+    width: 100%; /* Ensure it takes the full width */
+    justify-content: flex-start; /* Align contents to the left */
+}
+
+.SunburstGraph-container {
+    display: flex;
+    justify-content: center; /* Center the graph within the container */
+    align-items: center;
+    height: 100vh;
+    width: auto; /* Allow the graph to take its natural size */
+}
+
+.Modal {
+    position: absolute;
+    top: 50%;
+    left: 10%; /* Add left spacing of about 10% */
+    transform: translate(0, -50%); /* Center the modal vertically */
+    width: 55%;
+    /*max-width: 600px;*/
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    opacity: 0; /* Initial opacity for fade-in effect */
+    animation: fadeIn 2s forwards; /* Animation for fade-in with 2s duration */
+}
+
+.Overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-start; /* Align overlay contents to the left */
+    align-items: center;
+}
+
+#center-text {
+    fill: white;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+

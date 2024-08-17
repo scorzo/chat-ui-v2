@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: chat-app/Dockerfile
+    ports:
+      - "3000:80"  # Map port 80 in the container (Nginx) to port 3000 on the host
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "5001:5001"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
