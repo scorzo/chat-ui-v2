@@ -80,7 +80,6 @@ const FinanceManagementModalContent = ({ node, sunburstGraphRef, onRequestClose 
         try {
             const endpoint = updateMode === 'replace' ? 'sheet_replace_finance_data' : 'merge_finance_data';
             const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/${endpoint}`, {
-
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,9 +118,26 @@ const FinanceManagementModalContent = ({ node, sunburstGraphRef, onRequestClose 
                     <tbody>
                     {data.map((item, index) => (
                         <tr key={index}>
-                            {columns.map((column, colIndex) => (
-                                <td key={colIndex}>{item[column.toLowerCase().replace(/ /g, '_')]}</td>
-                            ))}
+                            {columns.map((column, colIndex) => {
+                                // Define a direct mapping for the recurring detail fields
+                                if (column === "Recurring Amount") {
+                                    return <td key={colIndex}>{item.recurring_detail?.recurring_amount || "N/A"}</td>;
+                                } else if (column === "Frequency") {
+                                    return <td key={colIndex}>{item.recurring_detail?.frequency || "N/A"}</td>;
+                                } else if (column === "Day") {
+                                    return <td key={colIndex}>{item.recurring_detail?.recurring_day || "N/A"}</td>;
+                                } else if (column === "Month") {
+                                    return <td key={colIndex}>{item.recurring_detail?.recurring_month || "N/A"}</td>;
+                                } else if (column === "Start Date") {
+                                    return <td key={colIndex}>{item.recurring_detail?.start_date || "N/A"}</td>;
+                                } else if (column === "End Date") {
+                                    return <td key={colIndex}>{item.recurring_detail?.end_date || "N/A"}</td>;
+                                } else {
+                                    // For other fields, map them directly from the item
+                                    const fieldName = column.toLowerCase().replace(/ /g, '_');
+                                    return <td key={colIndex}>{item[fieldName] || "N/A"}</td>;
+                                }
+                            })}
                         </tr>
                     ))}
                     </tbody>
@@ -131,6 +147,8 @@ const FinanceManagementModalContent = ({ node, sunburstGraphRef, onRequestClose 
             )}
         </div>
     );
+
+
 
     return (
         <div className="modal-container">
@@ -185,10 +203,10 @@ const FinanceManagementModalContent = ({ node, sunburstGraphRef, onRequestClose 
             <div className="content">
                 <Tabs>
                     <div label="Income">
-                        {renderSection("Income: Salary", "Salary", income.salary || [], ["Name", "Amount", "Frequency", "Source", "Comments", "Destination Account", "Recurring", "Start Date", "End Date"])}
-                        {renderSection("Income: Business Income", "Business Income", income.business_income || [], ["Name", "Amount", "Frequency", "Source", "Comments", "Destination Account", "Recurring", "Start Date", "End Date"])}
-                        {renderSection("Income: Investment Income", "Investment Income (interest, dividends, capital gains)", income.investment_income || [], ["Name", "Type", "Amount", "Frequency", "Comments"])}
-                        {renderSection("Income: Other Income", "Other Income (rental income, royalties, etc.)", income.other_income || [], ["Name", "Type", "Amount", "Frequency", "Comments"])}
+                        {renderSection("Income: Salary", "Salary", income.salary || [], ["Name", "Source", "Comments", "Destination Account", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Income: Business Income", "Business Income", income.business_income || [], ["Name", "Source", "Comments", "Destination Account", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Income: Investment Income", "Investment Income (interest, dividends, capital gains)", income.investment_income || [], ["Name", "Type", "Comments", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Income: Other Income", "Other Income (rental income, royalties, etc.)", income.other_income || [], ["Name", "Type", "Comments", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
                     </div>
                     <div label="Assets">
                         {renderSection("Assets: Savings Accounts", "Savings Accounts", assets.savings_accounts || [], ["Name", "Bank", "Balance", "Interest Rate", "Comments"])}
@@ -202,10 +220,10 @@ const FinanceManagementModalContent = ({ node, sunburstGraphRef, onRequestClose 
                         {renderSection("Savings and Investments: Education Savings", "Education Savings (529 plan, Coverdell ESA)", savingsAndInvestments.education_savings || [], ["Name", "Type", "Balance", "Contributions", "Comments"])}
                     </div>
                     <div label="Liabilities">
-                        {renderSection("Liabilities: Loans", "Loans (student, personal, auto)", liabilities.loans || [], ["Name", "Type", "Balance", "Interest Rate", "Minimum Payment", "Comments", "Source Account", "Recurring", "Start Date", "End Date"])}
-                        {renderSection("Liabilities: Credit Cards", "Credit Cards", liabilities.credit_cards || [], ["Name", "Issuer", "Balance", "Interest Rate", "Minimum Payment", "Comments"])}
-                        {renderSection("Liabilities: Mortgages", "Mortgages", liabilities.mortgages || [], ["Name", "Lender", "Balance", "Interest Rate", "Monthly Payment", "Comments"])}
-                        {renderSection("Liabilities: Other Debts", "Other Debts", liabilities.other_debts || [], ["Name", "Type", "Balance", "Interest Rate", "Minimum Payment", "Comments"])}
+                        {renderSection("Liabilities: Loans", "Loans (student, personal, auto)", liabilities.loans || [], ["Name", "Type", "Balance", "Interest Rate", "Minimum Payment", "Comments", "Source Account", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Liabilities: Credit Cards", "Credit Cards", liabilities.credit_cards || [], ["Name", "Issuer", "Balance", "Interest Rate", "Minimum Payment", "Comments", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Liabilities: Mortgages", "Mortgages", liabilities.mortgages || [], ["Name", "Lender", "Balance", "Interest Rate", "Comments", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Liabilities: Other Debts", "Other Debts", liabilities.other_debts || [], ["Name", "Type", "Balance", "Interest Rate", "Minimum Payment", "Comments", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
                     </div>
                     <div label="Net Worth">
                         <div className="section">
@@ -219,9 +237,9 @@ const FinanceManagementModalContent = ({ node, sunburstGraphRef, onRequestClose 
                         </div>
                     </div>
                     <div label="Expenses">
-                        {renderSection("Expenses: Expense Items", "Expense Items (e.g., gas, food, entertainment)", expenses.expense_items || [], ["Date", "Name", "Category", "Amount", "Recurring", "Frequency", "Start Date", "End Date", "Comments"])}
-                        {renderSection("Expenses: Subscriptions", "Subscriptions", expenses.subscriptions || [], ["Name", "Type", "Amount", "Frequency", "Comments", "Recurring", "Start Date", "End Date", "Source Account"])}
-                        {renderSection("Expenses: Insurance Policies", "Insurance Policies (health, auto, home)", expenses.insurance_policies || [], ["Name", "Type", "Provider", "Premium", "Coverage Details", "Comments"])}
+                        {renderSection("Expenses: Expense Items", "Expense Items (e.g., gas, food, entertainment)", expenses.expense_items || [], ["Name", "Category", "Comments", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Expenses: Subscriptions", "Subscriptions", expenses.subscriptions || [], ["Name", "Type", "Comments", "Source Account", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
+                        {renderSection("Expenses: Insurance Policies", "Insurance Policies (health, auto, home)", expenses.insurance_policies || [], ["Name", "Type", "Provider", "Premium", "Coverage Details", "Comments", "Recurring Amount", "Frequency", "Day", "Month", "Start Date", "End Date"])}
                     </div>
                 </Tabs>
             </div>

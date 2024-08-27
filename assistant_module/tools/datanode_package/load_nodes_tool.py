@@ -1,13 +1,13 @@
-import os
 import json
 import logging
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import BaseTool
 from typing import Optional, Type, Dict, Any
-from langchain.callbacks.manager import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
 import asyncio
 
 from termcolor import colored
+
+from assistant_module.nodes import load_nodes, save_nodes
 
 class GetAllNodesTool(BaseTool):
     name = "get_all_nodes"
@@ -25,34 +25,34 @@ class GetAllNodesTool(BaseTool):
         """Use the tool asynchronously."""
         return await asyncio.to_thread(self.get_all_nodes)
 
-    def load_nodes(self) -> str:
-        nodes_file_path = os.path.join(os.path.dirname(__file__), '../../../nodes', 'nodes.json')
-        try:
-            logging.debug("Checking if the nodes file exists.")
-            if not os.path.exists(nodes_file_path):
-                logging.error("File not found: %s", nodes_file_path)
-                return json.dumps({"error": "File not found"})
 
-            logging.debug("Reading the nodes file.")
-            with open(nodes_file_path, 'r') as f:
-                return json.dumps(json.load(f))
-
-        except Exception as e:
-            logging.exception("Exception occurred while loading nodes.")
-            return json.dumps({"error": str(e)})
 
     def get_all_nodes(self) -> str:
         logging.info("Received request for all nodes.")
-        nodes_data = self.load_nodes()
+
+        # Expecting a tuple (nodes_data, status)
+        nodes_data, status = load_nodes()
+
+        if status != 200:
+            logging.error(f"Error loading nodes: {nodes_data.get('error')}")
+            return json.dumps(nodes_data)  # Convert the error dictionary to a JSON string
+
         try:
-            nodes_dict = json.loads(nodes_data)
-            if "error" in nodes_dict:
-                logging.error("Error loading nodes: %s", nodes_dict["error"])
+            # If nodes_data is already a dictionary, no need for json.loads
+            if isinstance(nodes_data, dict):
+                nodes_dict = nodes_data  # Already a dictionary, so no need to decode
             else:
-                logging.debug("Nodes loaded successfully.")
-        except json.JSONDecodeError:
-            logging.error("Error decoding nodes data.")
-        return nodes_data
+                nodes_dict = json.loads(nodes_data)  # Handle any unexpected format
+
+            logging.debug("Nodes loaded successfully.")
+
+        except json.JSONDecodeError as e:
+            logging.error(f"JSONDecodeError: {e.msg} at line {e.lineno} column {e.colno} (char {e.pos})")
+            return json.dumps({"error": "Error decoding nodes data"})
+
+        # Convert the final dictionary back to a JSON string before returning
+        return json.dumps(nodes_dict)
+
 
 
 class NodeParams(BaseModel):
@@ -76,22 +76,6 @@ class GetNodeByIdTool(BaseTool):
         """Use the tool asynchronously."""
         return await asyncio.to_thread(self.get_node_by_id, node_id)
 
-    def load_nodes(self) -> str:
-        nodes_file_path = os.path.join(os.path.dirname(__file__), '../../../nodes', 'nodes.json')
-        try:
-            logging.debug("Checking if the nodes file exists.")
-            if not os.path.exists(nodes_file_path):
-                logging.error("File not found: %s", nodes_file_path)
-                return json.dumps({"error": "File not found"})
-
-            logging.debug("Reading the nodes file.")
-            with open(nodes_file_path, 'r') as f:
-                return json.dumps(json.load(f))
-
-        except Exception as e:
-            logging.exception("Exception occurred while loading nodes.")
-            return json.dumps({"error": str(e)})
-
     def find_node_by_id(self, nodes_data: Dict[str, Any], node_id: str) -> Optional[Dict[str, Any]]:
         def recursive_find(node, target_id):
             if node['node_id'] == target_id:
@@ -107,20 +91,40 @@ class GetNodeByIdTool(BaseTool):
 
     def get_node_by_id(self, node_id: str) -> str:
         logging.info(f"Received request for node ID: {node_id}")
-        nodes_data = self.load_nodes()
-        try:
-            nodes_dict = json.loads(nodes_data)
-            if "error" in nodes_dict:
-                logging.error("Error loading nodes: %s", nodes_dict["error"])
-                return nodes_data
+        logging.debug(f"Type of node_id: {type(node_id)}")
 
+        # Expecting a tuple (nodes_data, status)
+        nodes_data, status = load_nodes()
+        logging.debug(f"Type of nodes_data: {type(nodes_data)}, status: {status}")
+
+        if status != 200:
+            logging.error(f"Error loading nodes: {nodes_data.get('error', 'Unknown error')}")
+            logging.debug(f"Returning error response. Type of nodes_data: {type(nodes_data)}")
+            return json.dumps(nodes_data)  # Convert the error dictionary to a JSON string
+
+        try:
+            # If nodes_data is already a dictionary, no need for json.loads
+            if isinstance(nodes_data, dict):
+                nodes_dict = nodes_data  # Already a dictionary, so no need to decode
+                logging.debug("nodes_data is already a dictionary, no need for JSON parsing.")
+            else:
+                nodes_dict = json.loads(nodes_data)  # Handle any unexpected format
+                logging.debug(f"JSON parsing completed. Type of nodes_dict: {type(nodes_dict)}")
+
+            logging.debug("Nodes loaded successfully.")
+            logging.debug(f"Type of nodes_dict after JSON parsing: {type(nodes_dict)}")
+
+            logging.debug("Searching for node in nodes_dict.")
             node = self.find_node_by_id(nodes_dict, node_id)
+            logging.debug(f"Type of node: {type(node)}")
+
             if node:
-                logging.debug("Node found successfully.")
+                logging.debug("Node found successfully. Returning node data.")
                 return json.dumps(node)
             else:
                 logging.error(f"Node ID not found: {node_id}")
                 return json.dumps({"error": "Node ID not found"})
-        except json.JSONDecodeError:
-            logging.error("Error decoding nodes data.")
+        except json.JSONDecodeError as e:
+            logging.error(f"JSONDecodeError: {e.msg} at line {e.lineno} column {e.colno} (char {e.pos})")
             return json.dumps({"error": "Error decoding nodes data"})
+

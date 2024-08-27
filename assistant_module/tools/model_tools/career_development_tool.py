@@ -6,7 +6,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from assistant_module.tools.datanode_package.datanode import edit_datanode_from_model_with_tools
-from assistant_module.tools.model_tools.bills_management_models import FinanceManagement
+from .career_development_models import CareerDevelopment
 import os
 from datetime import datetime
 import pytz
@@ -26,14 +26,14 @@ def get_current_time_and_timezone(timezone_config):
     my_time = datetime.now(my_timezone).strftime('%Y-%m-%d')
     return my_time, my_timezone
 
-class EditFinanceManagementParams(BaseModel):
+class EditCareerDevelopmentParams(BaseModel):
     prompt: str = Field(description="The prompt to send to the language model for generating the datanode.")
     node_id: str = Field(description="The ID of the target node to be edited.")
 
-class EditFinanceManagementTool(BaseTool):
-    name = "edit_finance_management_tool"
-    description = "This tool edits an existing finance management list datanode based on the user's prompt and updates it in the nodes.json file. Use this tool to add, remove and modify existing finance management node content."
-    args_schema: Type[BaseModel] = EditFinanceManagementParams
+class EditCareerDevelopmentTool(BaseTool):
+    name = "edit_career_development_tool"
+    description = "This tool edits an existing career development entry based on the user's prompt and updates it in the corresponding data structure. Use this tool to add, remove, and edit skills, experiences, and educational background on existing nodes."
+    args_schema: Type[BaseModel] = EditCareerDevelopmentParams
 
     def _run(
             self, prompt: str, node_id: str, run_manager: Optional[CallbackManagerForToolRun] = None
@@ -49,40 +49,43 @@ class EditFinanceManagementTool(BaseTool):
 
     def edit_datanode(self, prompt: str, node_id: str) -> dict:
         """
-        Edits a datanode using the provided prompt and updates it in the nodes.json file.
+        Edits a datanode using the provided prompt and updates it in the appropriate data structure.
         """
         my_time, my_timezone = get_current_time_and_timezone(os.environ['TIMEZONE'])
         system_instructions = f"""
-        You are an AI assistant designed to make updates to the existing finance management datanode based on user instructions and return the result as a structured FinanceManagement Pydantic model.  If the user instructions do not apply or do not make sense, return the original node data unmodified in Pydantic model format.
-        
-        Complete modification requests in a single pass rather than using multiple steps.
-        
-        Respond with the data as a JSON object based on the FinanceManagement Pydantic model format.
-        Do not enclose the JSON object in a string or any other text. 
+        You are a helpful assistant. It's {my_time} in the {my_timezone} timezone.
+        Respond with the data as a JSON object based on the CareerDevelopment Pydantic model format.
+        Do not enclose the JSON object in a string or any other text.
         Only provide the JSON object itself.
+        """
+
+        prompt += f"""
+        Do not modify node name and description fields.
         """
 
         result = edit_datanode_from_model_with_tools(
             prompt=prompt,
             model_name="gpt-4o",
-            pydantic_model=FinanceManagement,
-            # tools=[],  # Add appropriate tools if needed
+            pydantic_model=CareerDevelopment,
+            #tools=[],  # Add appropriate tools if needed
             node_id=node_id,
-            node_type="FinanceManagementModalContent",
+            node_type="CareerDevelopmentModalContent",
             system_instructions=system_instructions
         )
 
         # Check if the result is an object and return it as a JSON-formatted string
         if isinstance(result, dict):  # Assuming the object is a dictionary
+            logging.info("Result is a dictionary. Converting to JSON string.")
             return json.dumps(result, indent=4)
         elif hasattr(result, '__dict__'):  # For objects that can be represented as dictionaries
+            logging.info("Result is an object with __dict__. Converting to JSON string.")
             return json.dumps(result.__dict__, indent=4)
         else:
+            logging.warning("Result is neither a dictionary nor an object with __dict__. Returning result as is.")
             return result
-
 
 # Example usage
 if __name__ == "__main__":
-    tool = EditFinanceManagementTool()
-    result = tool._run(prompt="Update the finance management details for the user", node_id="target_node_id")
+    tool = EditCareerDevelopmentTool()
+    result = tool._run(prompt="Update the career development details with the latest project experience", node_id="target_node_id")
     print("Edited datanode:", result)

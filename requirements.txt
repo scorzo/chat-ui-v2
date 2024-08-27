@@ -16,3 +16,6 @@ requests
 termcolor
 pytz
 PyJWT
+pymongo
+pydantic[email]
+

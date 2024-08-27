@@ -3,13 +3,15 @@ from typing import List, Optional
 
 class RecurringDetail(BaseModel):
     recurring: bool = Field(..., description="Indicates if the item is recurring")
+    frequency: str = Field(..., description="Frequency of the recurring item (e.g., annual, monthly, etc.)")
+    recurring_day: Optional[int] = Field(None, description="Day of the month when the item recurs")
+    recurring_month: Optional[int] = Field(None, description="Month of the year when the item recurs")
     start_date: Optional[str] = Field(None, description="Start date of the recurring item")
     end_date: Optional[str] = Field(None, description="End date of the recurring item")
+    recurring_amount: Optional[float] = Field(None, description="Amount for each recurrence of the item")
 
 class Salary(BaseModel):
     name: str = Field(..., description="Name of the salary income source")
-    amount: float = Field(..., description="Amount of the salary income")
-    frequency: str = Field(..., description="Frequency of the salary income (e.g., annual, monthly, etc.)")
     source: str = Field(..., description="Source of the salary income")
     comments: str = Field(default='', description="Additional comments for the salary income")
     destination_account: Optional[str] = Field(None, description="Destination account for the salary income")
@@ -17,8 +19,6 @@ class Salary(BaseModel):
 
 class BusinessIncome(BaseModel):
     name: str = Field(..., description="Name of the business income source")
-    amount: float = Field(..., description="Amount of the business income")
-    frequency: str = Field(..., description="Frequency of the business income (e.g., annual, monthly, etc.)")
     source: str = Field(..., description="Source of the business income")
     comments: str = Field(default='', description="Additional comments for the business income")
     destination_account: Optional[str] = Field(None, description="Destination account for the business income")
@@ -27,16 +27,14 @@ class BusinessIncome(BaseModel):
 class InvestmentIncome(BaseModel):
     name: str = Field(..., description="Name of the investment income source")
     type: str = Field(..., description="Type of investment income (e.g., interest, dividends, capital gains)")
-    amount: float = Field(..., description="Amount of the investment income")
-    frequency: str = Field(..., description="Frequency of the investment income (e.g., annual, monthly, etc.)")
     comments: str = Field(default='', description="Additional comments for the investment income")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the investment income")
 
 class OtherIncome(BaseModel):
     name: str = Field(..., description="Name of the other income source")
     type: str = Field(..., description="Type of other income (e.g., rental income, royalties)")
-    amount: float = Field(..., description="Amount of the other income")
-    frequency: str = Field(..., description="Frequency of the other income (e.g., annual, monthly, etc.)")
     comments: str = Field(default='', description="Additional comments for the other income")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the other income")
 
 class Income(BaseModel):
     salary: List[Salary] = Field(default_factory=list, description="List of salary incomes")
@@ -118,14 +116,15 @@ class CreditCard(BaseModel):
     interest_rate: float = Field(..., description="Interest rate of the credit card")
     minimum_payment: float = Field(..., description="Minimum payment for the credit card")
     comments: str = Field(default='', description="Additional comments for the credit card")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the credit card")
 
 class Mortgage(BaseModel):
     name: str = Field(..., description="Name of the mortgage")
     lender: str = Field(..., description="Lender of the mortgage")
     balance: float = Field(..., description="Balance of the mortgage")
     interest_rate: float = Field(..., description="Interest rate of the mortgage")
-    monthly_payment: float = Field(..., description="Monthly payment for the mortgage")
     comments: str = Field(default='', description="Additional comments for the mortgage")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the mortgage")
 
 class OtherDebt(BaseModel):
     name: str = Field(..., description="Name of the other debt")
@@ -134,6 +133,7 @@ class OtherDebt(BaseModel):
     interest_rate: float = Field(..., description="Interest rate of the other debt")
     minimum_payment: float = Field(..., description="Minimum payment for the other debt")
     comments: str = Field(default='', description="Additional comments for the other debt")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the other debt")
 
 class Liability(BaseModel):
     loans: List[Loan] = Field(default_factory=list, description="List of loans")
@@ -147,25 +147,16 @@ class NetWorth(BaseModel):
     net_worth: float = Field(..., description="Total assets minus total liabilities")
 
 class ExpenseItem(BaseModel):
-    date: str = Field(..., description="Date of the expense")
     name: str = Field(..., description="Name of the expense")
     category: str = Field(..., description="Category of the expense (e.g., gas, food, entertainment)")
-    amount: float = Field(..., description="Amount of the expense")
-    recurring: bool = Field(..., description="Indicates if the expense is recurring")
-    frequency: str = Field(..., description="Frequency of the expense")
-    start_date: Optional[str] = Field(None, description="Start date of the expense")
-    end_date: Optional[str] = Field(None, description="End date of the expense")
     comments: str = Field(default='', description="Additional comments for the expense")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the expense")
 
 class Subscription(BaseModel):
     name: str = Field(..., description="Name of the subscription")
     type: str = Field(..., description="Type of subscription (e.g., streaming, memberships)")
-    amount: float = Field(..., description="Amount of the subscription")
-    frequency: str = Field(..., description="Frequency of the subscription")
     comments: str = Field(default='', description="Additional comments for the subscription")
-    recurring: bool = Field(..., description="Indicates if the subscription is recurring")
-    start_date: Optional[str] = Field(None, description="Start date of the subscription")
-    end_date: Optional[str] = Field(None, description="End date of the subscription")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the subscription")
     source_account: Optional[str] = Field(None, description="Source account for the subscription")
 
 class InsurancePolicy(BaseModel):
@@ -175,6 +166,7 @@ class InsurancePolicy(BaseModel):
     premium: float = Field(..., description="Premium of the insurance policy")
     coverage_details: str = Field(..., description="Coverage details of the insurance policy")
     comments: str = Field(default='', description="Additional comments for the insurance policy")
+    recurring_detail: Optional[RecurringDetail] = Field(None, description="Recurring details for the insurance policy")
 
 class Expense(BaseModel):
     expense_items: List[ExpenseItem] = Field(default_factory=list, description="List of expense items")

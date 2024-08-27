@@ -76,7 +76,7 @@ class DailyUpdateTool(BaseTool):
         system_instructions = f"""
         You are a personal AI assistant designed to create daily updates. It's {my_time} in the {my_timezone} timezone.
         
-        The daily update should help with upcoming tasks and dates vs. dates and tasks that have passed. 
+        When creating daily updates, look forward in time, only presenting dates and upcoming schedule info for things in the future.
         
         Respond with the data in a JSON object format without enclosing it in a string. 
         Only provide the JSON object.

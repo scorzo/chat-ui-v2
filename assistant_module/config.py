@@ -1,0 +1,1 @@
+user = None  # Initialize it with None or any default value

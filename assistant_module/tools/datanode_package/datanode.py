@@ -1,13 +1,14 @@
-import os
 import json
 import base64
 import uuid
-import logging
+from pydantic import BaseModel
 from .load_nodes_tool import GetNodeByIdTool
 from assistant_module.generic_agent import GenericAgent
-from pydantic import BaseModel
 
-from termcolor import colored
+import logging
+from assistant_module.nodes import load_nodes, save_nodes
+
+
 
 def generate_base64_id():
     """
@@ -28,12 +29,14 @@ def add_datanode_to_nodes(datanode, node_id, node_type="DatanodeModalContent"):
     Returns:
         str: The new node_id of the added datanode.
     """
-    nodes_file_path = os.path.join(os.path.dirname(__file__), '../../../nodes', 'nodes.json')
 
     try:
-        # Load existing nodes data
-        with open(nodes_file_path, 'r') as file:
-            nodes_data = json.load(file)
+
+        nodes_data, status_code = load_nodes()
+        if status_code != 200:
+            logging.error("Error loading nodes: %s", nodes_data["error"])
+        else:
+            logging.debug("Nodes loaded successfully.")
 
         # Helper function to find a node by ID
         def find_node_by_id(node, target_id):
@@ -69,8 +72,7 @@ def add_datanode_to_nodes(datanode, node_id, node_type="DatanodeModalContent"):
         target_node['children'].append(new_node)
 
         # Save updated nodes data back to file
-        with open(nodes_file_path, 'w') as file:
-            json.dump(nodes_data, file, indent=2)
+        save_nodes(nodes_data)
 
         return new_node_id
 
@@ -78,31 +80,36 @@ def add_datanode_to_nodes(datanode, node_id, node_type="DatanodeModalContent"):
         print(f"Error updating nodes.json: {e}")
         return None
 
+
+
 def edit_datanode_in_nodes(node_id, datanode):
     """
-    Edits a datanode in the nodes.json file with the specified node_id.
+    Edits a datanode in the nodes data with the specified node_id.
 
     Args:
+        user (dict): The user object containing user information.
         node_id (str): The ID of the node to be edited.
         datanode (dict): The new datanode data to replace the existing node data.
     """
-    nodes_file_path = os.path.join(os.path.dirname(__file__), '../../../nodes', 'nodes.json')
 
-    print(colored(f"edit_datanode_in_nodes got node_id: {node_id}", "red"))
-    print(colored(f"edit_datanode_in_nodes got datanode: {datanode}", "red"))
+    logging.info(f"edit_datanode_in_nodes got node_id: {node_id}")
+    logging.info(f"edit_datanode_in_nodes got datanode: {datanode}")
 
     try:
         # Load existing nodes data
-        print(colored(f"Loading nodes data from: {nodes_file_path}", "blue"))
-        with open(nodes_file_path, 'r') as file:
-            nodes_data = json.load(file)
-        print(colored("Nodes data loaded successfully", "blue"))
+        logging.info("Loading nodes data from MongoDB")
+        nodes_data, status = load_nodes()
+
+        if status != 200:
+            raise Exception(nodes_data.get('error', 'Failed to load nodes data'))
+
+        logging.info("Nodes data loaded successfully")
 
         # Helper function to find and update a node by ID
         def find_and_update_node_by_id(node, target_id, new_data):
-            print(colored(f"Checking node: {node.get('node_id', 'unknown')} against target_id: {target_id}", "yellow"))
+            logging.debug(f"Checking node: {node.get('node_id', 'unknown')} against target_id: {target_id}")
             if node['node_id'] == target_id:
-                print(colored(f"Target node found. Updating node with new data: {new_data}", "green"))
+                logging.info(f"Target node found. Updating node with new data: {new_data}")
                 node['name'] = new_data['name']
                 node['description'] = new_data.get('description', '')
                 node['value'] = new_data.get('value', 1)
@@ -115,18 +122,22 @@ def edit_datanode_in_nodes(node_id, datanode):
             return False
 
         # Update the target node by ID
-        print(colored("Starting to find and update the target node", "blue"))
+        logging.info("Starting to find and update the target node")
         if not find_and_update_node_by_id(nodes_data, node_id, datanode):
             raise Exception("Target node ID not found")
 
-        # Save updated nodes data back to file
-        print(colored(f"Saving updated nodes data to: {nodes_file_path}", "blue"))
-        with open(nodes_file_path, 'w') as file:
-            json.dump(nodes_data, file, indent=2)
-        print(colored("Nodes data saved successfully", "blue"))
+        # Save updated nodes data back to MongoDB
+        logging.info("Saving updated nodes data to MongoDB")
+        save_response, save_status = save_nodes(nodes_data)
+
+        if save_status != 200:
+            raise Exception(save_response.get('error', 'Failed to save nodes data'))
+
+        logging.info("Nodes data saved successfully")
 
     except Exception as e:
-        print(colored(f"Error updating nodes.json: {e}", "red"))
+        logging.error(f"Error updating nodes data: {e}")
+
 
 def generate_datanode_from_model_with_tools(prompt, model_name="gpt-4o", pydantic_model=BaseModel, tools=[], node_id="target_node_id", node_type="DatanodeModalContent", system_instructions="You are a helpful assistant"):
     """

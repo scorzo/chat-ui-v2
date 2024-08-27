@@ -17,6 +17,12 @@ import FamilyHealthModalContent from "./FamilyHealthModalContent";
 import DailyUpdateModalContent from "./DailyUpdateModalContent";
 import FamilyPersonalityModalContent from "./FamilyPersonalityModalContent";
 import MealPlanningModalContent from "./MealPlanningModalContent";
+import GoalsCoachingModalContent from "./GoalsCoachingModalContent";
+import WorkConnectionsModalContent from "./WorkConnectionsModalContent";
+import CareerDevelopmentModalContent from "./CareerDevelopmentModalContent";
+import CareerGoalsCoachingModalContent from "./CareerGoalsCoachingModalContent";
+
+
 
 
 
@@ -320,7 +326,11 @@ const SunburstGraph = forwardRef(({ data, fetchNodesData }, ref) => {
         DailyUpdateModalContent,
         FamilyPersonalityModalContent,
         MealPlanningModalContent,
-        SpecialDatesModalContent
+        SpecialDatesModalContent,
+        GoalsCoachingModalContent,
+        WorkConnectionsModalContent,
+        CareerDevelopmentModalContent,
+        CareerGoalsCoachingModalContent
     };
 
     const getModalContent = (node) => {

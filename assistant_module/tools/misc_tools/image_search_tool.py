@@ -15,7 +15,7 @@ from PIL import Image
 from io import BytesIO
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - IMAGE_SEARCH_TOOL - %(levelname)s - %(message)s')
+# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - IMAGE_SEARCH_TOOL - %(levelname)s - %(message)s')
 
 # Hard-coded variable to check resolution
 CHECK_RESOLUTION = False

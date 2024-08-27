@@ -6,14 +6,8 @@ from openai import OpenAI
 from google.auth.transport import requests
 from google.oauth2 import id_token
 import jwt
-
-# Add the parent directory of assistant_module to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from assistant_module.thread_store import store_thread, check_if_thread_exists, get_all_threads, name_thread
 import argparse
 from typing import Dict, Any
-
 import logging
 import colorlog
 from quart import Quart, request, jsonify, Response
@@ -22,103 +16,35 @@ from quart_cors import cors
 from dotenv import load_dotenv
 load_dotenv()
 
-sync_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
-
+# Add the parent directory of assistant_module to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from assistant_module.nodes import load_nodes, save_nodes
+from assistant_module.thread_store import store_thread, check_if_thread_exists, get_all_threads, name_thread
 from assistant_module.assistant_module import generate, create_new_thread, retrieve_existing_thread
 from assistant_module.tools.model_tools.home_tool import RedfinScraperTool
 from assistant_module.tools.model_tools.bills_management_sheet_replace_tool import FinanceManagementTool
 from assistant_module.tools.model_tools.bills_management_sheet_merge_tool import FinanceManagementMergeTool
-from assistant_module.time_module.time_utils import get_current_time_and_timezone
+
+
+
 
 app = Quart(__name__)
 app = cors(app, allow_origin="http://localhost:3000",
            allow_methods=["GET", "POST", "OPTIONS"],
            allow_headers=["Authorization", "Content-Type"])
 
-# JWT secret key (keep this safe, and in production, it should be in environment variables)
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your_secret_key')
 JWT_ALGORITHM = 'HS256'  # Algorithm used to sign the JWT
 
+
+sync_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+
+
+
+
 ### configure logging ###
-class CustomColoredFormatter(colorlog.ColoredFormatter):
-    def format(self, record):
-
-        # Check if the log message contains a JSON string and pretty-print it
-        message = record.getMessage()
-
-        # Function to find JSON objects in a string
-        def find_json_objects(text):
-            start = -1
-            depth = 0
-            objects = []
-            for i, char in enumerate(text):
-                if char == '{':
-                    if depth == 0:
-                        start = i
-                    depth += 1
-                elif char == '}':
-                    depth -= 1
-                    if depth == 0 and start != -1:
-                        objects.append(text[start:i + 1])
-                        start = -1
-            return objects
-
-        json_matches = find_json_objects(message)
-
-        for match in json_matches:
-            try:
-                # Replace single quotes with double quotes for JSON parsing
-                valid_json_str = match.replace("'", '"')
-                json_data = json.loads(valid_json_str)
-                pretty_json = json.dumps(json_data, indent=2, sort_keys=True)
-                message = message.replace(match, pretty_json)
-                record.msg = message
-                print("Pretty-printed JSON:", pretty_json)  # Log the pretty-printed JSON
-            except json.JSONDecodeError as e:
-                print("JSONDecodeError:", e)  # Log JSON decoding errors
-
-        return super().format(record)
-
-# Configure root logger
-def setup_logger():
-    # Define log colors
-    log_colors = {
-        'DEBUG': 'cyan',
-        'INFO': 'green',
-        'WARNING': 'yellow',
-        'ERROR': 'red',
-        'CRITICAL': 'bold_red',
-    }
-
-    # Create a color formatter
-    formatter = CustomColoredFormatter(
-        "%(log_color)s%(asctime)s - %(levelname)s - %(message)s",
-        datefmt='%Y-%m-%d %H:%M:%S',
-        log_colors=log_colors
-    )
-
-    # Get the root logger
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-
-    # Create a stream handler
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(formatter)
-
-    # Remove all existing handlers
-    logger.handlers = []
-
-    # Add the color log handler to the root logger
-    logger.addHandler(handler)
-
-# Call setup_logger to configure the logger
-setup_logger()
-
-# Example usage
-logger = logging.getLogger(__name__)
-### end configure logging ###
-
+logger = logging.getLogger()
+logger.setLevel(logging.CRITICAL)
 
 #### start session stuff ###
 
@@ -192,6 +118,9 @@ async def login():
     jwt_token = generate_jwt(user_info)
     return jsonify({"token": jwt_token})
 
+
+from assistant_module.auth import get_jwt_payload
+
 @app.before_request
 async def authenticate():
     # Skip authentication for OPTIONS requests
@@ -203,20 +132,10 @@ async def authenticate():
     if request.path in open_routes:
         return  # Skip authentication for open routes
 
-    auth_header = request.headers.get('Authorization', None)
-    if not auth_header:
-        return jsonify({"error": "Missing Authorization header"}), 401
-
-    try:
-        token = auth_header.split(" ")[1]
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        request.user = payload
-    except IndexError:
-        return jsonify({"error": "Invalid Authorization header format"}), 401
-    except jwt.ExpiredSignatureError:
-        return jsonify({"error": "Token has expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"error": "Invalid token"}), 401
+    # Use the JWT authentication utility
+    payload = get_jwt_payload()
+    if payload is None:
+        return jsonify({"error": "Authentication failed"}), 401
 
 
 ### end session stuff ###
@@ -297,12 +216,6 @@ async def merge_finance_data():
 
 ### begin nodes management api
 
-nodes_file_path = os.path.join(os.path.dirname(__file__), '../nodes', 'nodes.json')
-
-def save_nodes(nodes):
-    with open(nodes_file_path, 'w') as f:
-        json.dump(nodes, f, indent=4)
-
 def find_node_by_id(node, node_id):
     if node.get('node_id') == node_id:
         return node
@@ -313,20 +226,9 @@ def find_node_by_id(node, node_id):
                 return result
     return None
 
-def load_nodes():
-    try:
-        logging.debug("Checking if the nodes file exists.")
-        if not os.path.exists(nodes_file_path):
-            logging.error("File not found: %s", nodes_file_path)
-            return {"error": "File not found"}, 404
 
-        logging.debug("Reading the nodes file.")
-        with open(nodes_file_path, 'r') as f:
-            return json.load(f), 200
 
-    except Exception as e:
-        logging.exception("Exception occurred while loading nodes.")
-        return {"error": str(e)}, 500
+
 
 def get_nodes_for_tool() -> Dict[str, Any]:
     nodes, status_code = load_nodes()
@@ -743,10 +645,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 5001))
+
     if args.mode == "cli":
         import asyncio
         asyncio.run(main())
     elif args.mode == "api":
-        app.run(host='0.0.0.0', port=5001, debug=True)
+        app.run(host=host, port=port, debug=True)
     elif args.mode == "list_routes":
-            list_routes()
+        list_routes()

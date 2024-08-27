@@ -12,6 +12,9 @@ from datetime import datetime
 import pytz
 import asyncio
 
+import logging
+import json
+
 def get_current_time_and_timezone(timezone_config):
     if not timezone_config:
         raise ValueError("Timezone configuration is not defined.")
@@ -51,10 +54,13 @@ class EditHouseholdMaintenanceTool(BaseTool):
         """
         my_time, my_timezone = get_current_time_and_timezone(os.environ['TIMEZONE'])
         system_instructions = f"""
-        You are a helpful assistant. It's {my_time} in the {my_timezone} timezone.
-        """
+                    You are a helpful assistant. It's {my_time} in the {my_timezone} timezone.
+                    Respond with the data as a JSON object based on the HouseholdMaintenance Pydantic model format.
+                    Do not enclose the JSON object in a string or any other text. 
+                    Only provide the JSON object itself.
+                    """
 
-        return edit_datanode_from_model_with_tools(
+        result = edit_datanode_from_model_with_tools(
             prompt=prompt,
             model_name="gpt-4o",
             pydantic_model=HouseholdMaintenance,
@@ -63,6 +69,17 @@ class EditHouseholdMaintenanceTool(BaseTool):
             node_type="HouseholdMaintenanceModalContent",
             system_instructions=system_instructions
         )
+
+        # Check if the result is an object and return it as a JSON-formatted string
+        if isinstance(result, dict):  # Assuming the object is a dictionary
+            logging.info("Result is a dictionary. Converting to JSON string.")
+            return json.dumps(result, indent=4)
+        elif hasattr(result, '__dict__'):  # For objects that can be represented as dictionaries
+            logging.info("Result is an object with __dict__. Converting to JSON string.")
+            return json.dumps(result.__dict__, indent=4)
+        else:
+            logging.warning("Result is neither a dictionary nor an object with __dict__. Returning result as is.")
+            return result
 
 # Example usage
 if __name__ == "__main__":
