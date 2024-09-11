@@ -21,6 +21,9 @@ import GoalsCoachingModalContent from "./GoalsCoachingModalContent";
 import WorkConnectionsModalContent from "./WorkConnectionsModalContent";
 import CareerDevelopmentModalContent from "./CareerDevelopmentModalContent";
 import CareerGoalsCoachingModalContent from "./CareerGoalsCoachingModalContent";
+import JobSearchModalContent from "./JobSearchModalContent";
+import ResumeModalContent from "./ResumeModalContent";
+
 
 
 
@@ -330,7 +333,9 @@ const SunburstGraph = forwardRef(({ data, fetchNodesData }, ref) => {
         GoalsCoachingModalContent,
         WorkConnectionsModalContent,
         CareerDevelopmentModalContent,
-        CareerGoalsCoachingModalContent
+        CareerGoalsCoachingModalContent,
+        JobSearchModalContent,
+        ResumeModalContent
     };
 
     const getModalContent = (node) => {

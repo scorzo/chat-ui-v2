@@ -1,0 +1,66 @@
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: $DOCKER_USER/backend-image:latest  # Updated to use Docker Hub path
+          env:
+            - name: ENVIRONMENT
+              value: "kubernetes"  # Hardcoded value
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MONGO_URI
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: OPENAI_API_KEY
+            - name: SERPER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: SERPER_API_KEY
+            - name: TICKETMASTER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: TICKETMASTER_API_KEY
+            - name: AMADEUS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: AMADEUS_API_KEY
+            - name: AMADEUS_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: AMADEUS_API_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: GOOGLE_CLIENT_ID
+          ports:
+            - containerPort: 5001
+---
+# Backend Service (ClusterIP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+  type: ClusterIP  # Exposes the backend service internally within the cluster

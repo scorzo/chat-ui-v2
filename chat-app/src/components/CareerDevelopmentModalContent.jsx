@@ -46,33 +46,18 @@ const Tabs = ({ children }) => {
 
 const CareerDevelopmentModalContent = ({ node }) => {
     const { details = {} } = node;
-    const { name = 'No Name', description = 'No Description', skills = [], experience = [], education = [] } = details;
+    const { name = 'No Name', description = 'No Description', contact_information = {}, experience = [], education = [], additional_skills = {} } = details;
 
-    const renderSkills = (skills = []) => (
+    const renderContactInformation = (contact_information) => (
         <div>
-            {skills.length > 0 ? (
-                <ul>
-                    {skills.map((skill, index) => (
-                        <li key={index}>
-                            <strong>{skill.skill_name}</strong>
-                            {skill.proficiency_level && ` - ${skill.proficiency_level}`}
-                            <p>Last Updated: {skill.last_updated_date}</p>
-                            {(skill.related_projects && skill.related_projects.length > 0) ? (
-                                <p>Related Projects: {skill.related_projects.join(', ')}</p>
-                            ) : (
-                                <p>No related projects.</p>
-                            )}
-                            {(skill.keywords && skill.keywords.length > 0) ? (
-                                <p>Keywords: {skill.keywords.join(', ')}</p>
-                            ) : (
-                                <p>No keywords provided.</p>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No skills have been added yet.</p>
-            )}
+            <strong>{contact_information.name}</strong>
+            <p>Job Title: {contact_information.job_title}</p>
+            <p>Location: {contact_information.location}</p>
+            {contact_information.linkedin && <p>LinkedIn: <a href={contact_information.linkedin}>{contact_information.linkedin}</a></p>}
+            <p>Email: {contact_information.email}</p>
+            <p>Phone: {contact_information.phone}</p>
+            {contact_information.github && <p>GitHub: <a href={contact_information.github}>{contact_information.github}</a></p>}
+            {contact_information.articles && <p>Articles: <a href={contact_information.articles}>{contact_information.articles}</a></p>}
         </div>
     );
 
@@ -82,31 +67,23 @@ const CareerDevelopmentModalContent = ({ node }) => {
                 <ul>
                     {experience.map((exp, index) => (
                         <li key={index}>
-                            <strong>{exp.job_title}</strong> at {exp.company}
+                            <strong>{exp.company}</strong>
                             <p>{exp.location}</p>
                             <p>{exp.duration}</p>
-                            <p>Responsibilities:</p>
-                            <ul>
-                                {(exp.responsibilities || []).map((responsibility, idx) => (
-                                    <li key={idx}>{responsibility}</li>
-                                ))}
-                            </ul>
-                            {(exp.achievements && exp.achievements.length > 0) && (
-                                <>
-                                    <p>Achievements:</p>
+                            {exp.roles.map((role, idx) => (
+                                <div key={idx}>
+                                    <p><strong>Role Title:</strong> {role.role_title}</p>
                                     <ul>
-                                        {exp.achievements.map((achievement, idx) => (
-                                            <li key={idx}>{achievement}</li>
+                                        {role.projects_accomplishments.map((proj, projIdx) => (
+                                            <li key={projIdx}>
+                                                <strong>{proj.name}</strong>
+                                                <p>{proj.description}</p>
+                                                <p>Skills Tags: {proj.skills_tags.join(', ')}</p>
+                                            </li>
                                         ))}
                                     </ul>
-                                </>
-                            )}
-                            {(exp.skills_used && exp.skills_used.length > 0) && (
-                                <p>Skills Used: {exp.skills_used.join(', ')}</p>
-                            )}
-                            {(exp.keywords && exp.keywords.length > 0) && (
-                                <p>Keywords: {exp.keywords.join(', ')}</p>
-                            )}
+                                </div>
+                            ))}
                         </li>
                     ))}
                 </ul>
@@ -146,6 +123,23 @@ const CareerDevelopmentModalContent = ({ node }) => {
         </div>
     );
 
+    const renderKnowledgeBase = (additional_skills = {}) => (
+        <div>
+            {additional_skills.skills && additional_skills.skills.length > 0 ? (
+                <ul>
+                    {additional_skills.skills.map((skill, index) => (
+                        <li key={index}>
+                            <strong>{skill.skill_name}</strong>
+                            <p>{skill.notes}</p>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p>No additional skills have been added yet.</p>
+            )}
+        </div>
+    );
+
     return (
         <div className="modal-container">
             <div className="header">
@@ -154,14 +148,17 @@ const CareerDevelopmentModalContent = ({ node }) => {
             </div>
             <div className="content">
                 <Tabs>
-                    <div label="Skills">
-                        {renderSkills(skills)}
+                    <div label="Contact">
+                        {renderContactInformation(contact_information)}
                     </div>
                     <div label="Experience">
                         {renderExperience(experience)}
                     </div>
                     <div label="Education">
                         {renderEducation(education)}
+                    </div>
+                    <div label="Knowledge Base">
+                        {renderKnowledgeBase(additional_skills)}
                     </div>
                 </Tabs>
             </div>

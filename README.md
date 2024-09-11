@@ -79,7 +79,6 @@ Note: Ensure that you have the necessary permissions and correct calendar ID bef
 
 ### Docker Compose
 
-Commands to Start
 Navigate to the root directory (where the docker-compose.yml file is located).
 
 Run Docker Compose to build and start the front-end and back-end containers:

@@ -9,7 +9,7 @@ from datetime import datetime
 import pytz
 import os
 from assistant_module.tools.datanode_package.datanode import generate_datanode_from_model_with_tools
-from assistant_module.tools.datanode_package.load_nodes_tool import GetAllNodesTool
+from assistant_module.tools.datanode_package.prune_node_tool import PruneNodeTool
 from .daily_update_models import DailyUpdate
 from assistant_module.tools.misc_tools.web_search_tool import WebSearchTool
 from assistant_module.tools.calendar_package.list_calendar_events import ListEventsTool
@@ -76,7 +76,42 @@ class DailyUpdateTool(BaseTool):
         system_instructions = f"""
         You are a personal AI assistant designed to create daily updates. It's {my_time} in the {my_timezone} timezone.
         
-        When creating daily updates, look forward in time, only presenting dates and upcoming schedule info for things in the future.
+        Use the PruneNodeTool to query info about the user relevant to your query. 
+        
+        Greeting:
+        The greeting should be a short paragraph that highlights key information from the daily update.
+  
+        Finance Updates:
+        
+        Income: List all upcoming income sources where the recurring day value falls within the next 7 days based on today's date which is {my_time} {my_timezone}.  Including salaries, business income, investment income, and other income. 
+        
+        Expenses: List all upcoming expenses where the recurring day value falls within the next 7 days based on today's date which is {my_time} {my_timezone}.  Do not include Credit Card Payments here as those go under Liabilities.
+        
+        Liabilities:
+        
+        Smaller Liabilities: List all liabilities where the recurring day value falls within the next 7 calendar days based on today's date which is {my_time} {my_timezone}
+        Larger Liabilities (amount over 1000):  List all upcoming income sources where the recurring day value falls within the next 14 calendar days based on today's date which is {my_time} {my_timezone}
+        
+        General Rules:
+        Do not show income, expenses, or liabilities from the past.  Today's date is {my_time} {my_timezone}.
+
+        Daily Digest Suggestions:
+        Provide various entertainment, informational reading, viewing, and listening resources tailored to the user's tastes and lifestyle.
+        
+        Event Reminders:
+        Only include events that are scheduled within the next month.  If there are no events scheduled in the next month, provide a message to that effect.  Today's date is {my_time} {my_timezone}.
+        
+        Work Goals:
+        Populate the work goal comments with relevant details and actionable insights to help the user achieve their goals.
+        
+        Family Goals:
+        Populate the family goal comments with relevant details and actionable insights to help the family achieve their goals.
+        
+        Closing Greeting:
+        Write a motivational paragraph designed to inspire the user based on the tasks and challenges they will face in the day ahead.
+        
+        Inspirational Quote:
+        Update the quote daily to provide fresh inspiration.
         
         Respond with the data in a JSON object format without enclosing it in a string. 
         Only provide the JSON object.
@@ -86,7 +121,7 @@ class DailyUpdateTool(BaseTool):
             prompt=prompt,
             model_name="gpt-4o",
             pydantic_model=DailyUpdate,
-            tools=[GetAllNodesTool(),WebSearchTool(), ListEventsTool()],  # Add appropriate tools if needed
+            tools=[PruneNodeTool(),WebSearchTool(), ListEventsTool()],  # Add appropriate tools if needed
             node_id=parent_node_id,
             node_type="DailyUpdateModalContent",
             system_instructions=system_instructions

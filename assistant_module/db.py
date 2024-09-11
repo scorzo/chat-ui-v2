@@ -4,6 +4,7 @@ import os
 def get_db():
     mongo_uri = os.getenv('MONGO_URI')
     mongo_db = os.getenv('MONGO_DB')
+
     client = MongoClient(mongo_uri)
     return client.get_database(mongo_db)
 

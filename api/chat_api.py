@@ -14,7 +14,16 @@ from quart import Quart, request, jsonify, Response
 from quart_cors import cors
 
 from dotenv import load_dotenv
-load_dotenv()
+
+# Determine the environment and load the corresponding .env file
+environment = os.getenv('ENVIRONMENT', 'local')
+
+if environment == 'local':
+    load_dotenv('.env.local')
+elif environment == 'docker':
+    load_dotenv('.env.local-docker')
+elif environment == 'kubernetes':
+    load_dotenv('.env.kubernetes')
 
 # Add the parent directory of assistant_module to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -45,6 +54,7 @@ sync_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 ### configure logging ###
 logger = logging.getLogger()
 logger.setLevel(logging.CRITICAL)
+
 
 #### start session stuff ###
 

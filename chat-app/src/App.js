@@ -420,6 +420,8 @@ function App() {
         // window.location.href = '/login';  // Uncomment to redirect after logout
     };
 
+
+
     const toggleMenu = () => {
         setMenuVisible(!menuVisible); // Toggle visibility of the preferences menu
     };

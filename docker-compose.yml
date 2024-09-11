@@ -21,7 +21,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - .env
+      - .env.local
     depends_on:
       - mongo
     environment:

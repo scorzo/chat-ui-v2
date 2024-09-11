@@ -12,7 +12,7 @@ from assistant_module.tools.datanode_package.datanode import generate_datanode_f
 from assistant_module.tools.misc_tools.image_search_tool import ImageSearchTool
 from assistant_module.tools.misc_tools.web_search_tool import WebSearchTool
 from assistant_module.tools.calendar_package.list_calendar_events import ListEventsTool
-from assistant_module.tools.datanode_package.load_nodes_tool import GetAllNodesTool
+from assistant_module.tools.datanode_package.prune_node_tool import PruneNodeTool
 import asyncio
 
 class MenuItem(BaseModel):
@@ -88,7 +88,7 @@ class MealPlanningTool(BaseTool):
             prompt=prompt,
             model_name="gpt-4o",
             pydantic_model=MenuIdeas,
-            tools=[ImageSearchTool(),GetAllNodesTool(),WebSearchTool(), ListEventsTool()],  # Add appropriate tools if needed
+            tools=[ImageSearchTool(),PruneNodeTool(),WebSearchTool(), ListEventsTool()],  # Add appropriate tools if needed
             node_id=parent_node_id,
             node_type="MealPlanningModalContent",
             system_instructions=system_instructions

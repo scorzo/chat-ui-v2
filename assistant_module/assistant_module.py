@@ -16,16 +16,6 @@ api_key = os.environ['OPENAI_API_KEY']
 async_client = AsyncOpenAI(api_key=api_key)
 
 list_tools=[
-    # {"type": "function",
-    #  "function":{
-    #      "name": "get_nodes",
-    #      "description": "Return a data structure containing comprehensive details related to the digital twin schedule, including life events, activities, dates, values, and associated information.",
-    #      "parameters": {
-    #          "type": "object",
-    #          "properties": {}
-    #      }
-    #  }
-    #  },
     {
         "type": "function",
         "function": {
@@ -313,10 +303,47 @@ list_tools=[
                 "required": ["prompt", "node_id"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "edit_job_search_tool",
+            "description": "This tool edits an existing job search utility entry based on the user's prompt and updates it in the corresponding data structure. Use this tool to add, remove, and edit job search criteria, job postings, and application tracking on existing nodes.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prompt": {
+                        "type": "string",
+                        "description": "The prompt to send to the language model for updating the job search utility datanode."
+                    },
+                    "node_id": {
+                        "type": "string",
+                        "description": "The ID of the target datanode to be edited."
+                    }
+                },
+                "required": ["prompt", "node_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "resume_build_tool",
+            "description": "This tool generates an ATS-compliant resume based on the user's prompt and adds it under the specified parent node in the data structure. Use this tool to create a structured resume that includes contact information, resume summary, work experience, and education details.",
+            "strict": True,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prompt": {
+                        "type": "string",
+                        "description": "The prompt to send to the language model for generating the resume."
+                    }
+                },
+                "required": ["prompt"],
+                "additionalProperties": False
+            }
+        }
     }
-
-
-
 
 ]
 
@@ -331,7 +358,6 @@ from assistant_module.tools.model_tools.bills_management_update_tool import Edit
 from assistant_module.tools.model_tools.itinerary_tool import ItineraryTool
 from assistant_module.tools.model_tools.edit_itinerary_tool import EditItineraryTool
 from assistant_module.time_module.time_utils import get_current_time_and_timezone
-#from assistant_module.tools.datanode_package.load_nodes_tool import GetAllNodesTool
 from assistant_module.tools.datanode_package.prune_node_tool import PruneNodeTool
 from assistant_module.tools.model_tools.meal_planning_tool import MealPlanningTool
 from assistant_module.tools.model_tools.special_dates_tool import EditSpecialDatesTool
@@ -339,12 +365,13 @@ from assistant_module.tools.model_tools.goals_coaching_tool import EditGoalsCoac
 from assistant_module.tools.model_tools.work_connections_tool import EditWorkConnectionsTool
 from assistant_module.tools.model_tools.career_development_tool import EditCareerDevelopmentTool
 from assistant_module.tools.model_tools.career_goals_coaching_tool import EditCareerGoalsCoachingTool
+from assistant_module.tools.model_tools.job_search_tool import EditJobSearchTool
+from assistant_module.tools.model_tools.resume_tool import ResumeGenerationTool
 
 
 
 # define dispatch table
 function_dispatch_table = {
-    # "get_nodes": lambda **kwargs: GetAllNodesTool()._arun(**kwargs),
     "get_pruned_nodes": lambda **kwargs: PruneNodeTool()._arun(**kwargs),
     "list_events": lambda **kwargs: ListEventsTool()._arun(**kwargs),
     "add_calendar_event": lambda **kwargs: AddCalendarEventTool()._arun(**kwargs),
@@ -361,7 +388,9 @@ function_dispatch_table = {
     "edit_goals_coaching_tool": lambda **kwargs: EditGoalsCoachingTool()._arun(**kwargs),
     "edit_work_connections_tool": lambda **kwargs: EditWorkConnectionsTool()._arun(**kwargs),
     "edit_career_development_tool": lambda **kwargs: EditCareerDevelopmentTool()._arun(**kwargs),
-    "edit_career_goals_coaching_tool": lambda **kwargs: EditCareerGoalsCoachingTool()._arun(**kwarg)
+    "edit_career_goals_coaching_tool": lambda **kwargs: EditCareerGoalsCoachingTool()._arun(**kwarg),
+    "edit_job_search_tool": lambda **kwargs: EditJobSearchTool()._arun(**kwargs),
+    "resume_build_tool": lambda **kwargs: ResumeGenerationTool()._arun(**kwargs),
 }
 
 
@@ -453,7 +482,8 @@ async def handle_function_call(tool_call: RequiredActionFunctionToolCall, run_id
         "thread_id": thread_id,
         "tool_call_id": tool_call_id,
         "function_name": function_name,
-        "function_args": truncated_args,
+        # "function_args": truncated_args,
+        "function_args": function.arguments,
         "status": "start"
     }
 
@@ -618,6 +648,16 @@ async def generate(user_query: str, lookup_id: str = None, assistant_id: str = N
         
         Instructions for Daily updates:
         1) When returning daily updates, just show a link to the relevant node in the node structure.
+        
+        Instructions for building resumes:
+        1) Before calling the resume_build_tool:
+        
+            a) present the user with 2 enumerated list of skills, the skills that they have that match the posting, and the skills that are outside of what the user already has defined under the Carreer Details node, that the job requires based on the job description.  Ask them if they would like to add any of them to their Career Details info.
+            b) if yes, ask if they want to associate those new skills with any of the existing job roles or projects that they've already defined under Career Details, or potentially add new ones, and provide some suggestions based on existing Careers Data node details.  Again, ask them if they want to add any of these new job role/skillset combinations to their Career Details info.
+            c) go through each experience section, one by one, gathering input in order to work with the user to craft experience examples that are relevant to the job description.  Do not simply ask the user for examples, make suggestions based on the info you have on hand coupled with optimal entries based on the job description.  Try to demonstrate increasing impact and responsibility from job to job to show the recruiter capacity to taking on more and more and gives them an idea of career direction, but ground it all in the factual data contained in the Career Details node data.
+        
+        2) Provide all job description details that were given in the prompt when calling the resume_build_tool tool.  Do not omit any job description details.
+        3) When building a resume, just show a link to the relevant node in the node structure.
         
         Instructions regarding order of steps:
         1) Do not create calendar entries without first asking.
