@@ -4,6 +4,9 @@ FROM node:18 AS build
 # Set the working directory in the container
 WORKDIR /app
 
+# Test internet connectivity
+RUN curl https://registry.npmjs.org/ || ping -c 4 8.8.8.8
+
 # Update npm to the latest version
 RUN npm install -g npm@latest
 
