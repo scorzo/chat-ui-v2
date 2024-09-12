@@ -22,32 +22,38 @@ spec:
             - name: MONGO_URI
               valueFrom:
                 secretKeyRef:
-                  name: app-secrets
-                  key: MONGO_URI
+                  name: app-secrets  # Name of the secret
+                  key: MONGO_URI     # Specific key in the secret
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: OPENAI_API_KEY
+                  name: app-secrets  # Name of the secret
+                  key: OPENAI_API_KEY  # Specific key in the secret
             - name: SERPER_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: SERPER_API_KEY
+                  name: app-secrets
+                  key: SERPER_API_KEY
             - name: TICKETMASTER_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: TICKETMASTER_API_KEY
+                  name: app-secrets
+                  key: TICKETMASTER_API_KEY
             - name: AMADEUS_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: AMADEUS_API_KEY
+                  name: app-secrets
+                  key: AMADEUS_API_KEY
             - name: AMADEUS_API_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: AMADEUS_API_SECRET
+                  name: app-secrets
+                  key: AMADEUS_API_SECRET
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: GOOGLE_CLIENT_ID
+                  name: app-secrets
+                  key: GOOGLE_CLIENT_ID
           ports:
             - containerPort: 5001
 ---
