@@ -7,7 +7,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY api/ ./api
-COPY .env ./
+#COPY .env ./
 COPY client_secret.json ./
 COPY client_secret_sheets.json ./
 #COPY threads_db.db ./
