@@ -4,6 +4,9 @@ FROM node:18 AS build
 # Set the working directory in the container
 WORKDIR /app
 
+# Install ping for troubleshooting
+RUN apt-get update && apt-get install -y iputils-ping
+
 # Test internet connectivity
 RUN curl https://registry.npmjs.org/ || ping -c 4 8.8.8.8
 
