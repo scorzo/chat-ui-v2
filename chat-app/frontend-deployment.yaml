@@ -35,4 +35,4 @@ spec:
       port: 80
       targetPort: 80
   type: LoadBalancer  # Automatically provisions an OpenStack Load Balancer
-  loadBalancerIP: <your-public-floating-ip>  # Specify the external IP address for the Load Balancer
+  loadBalancerIP: 216.194.174.134  # Specify the external IP address for the Load Balancer

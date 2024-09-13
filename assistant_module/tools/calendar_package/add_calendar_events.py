@@ -41,7 +41,7 @@ def get_calendar_service():
     return service
 
 
-service = get_calendar_service()
+
 
 class AddEventInput(BaseModel):
     event_summary: str = Field(description="Summary of the event")
@@ -84,6 +84,9 @@ class AddCalendarEventTool(BaseTool):
             },
         }
         try:
+            # Get calendar service within the method
+            service = get_calendar_service()
+
             print(f"Created event '{event_summary}' at '{event_location}' starting from {start_time} to {end_time} in time zone {start_time_zone}.")
             event_result = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
             return f"Event created: {event_result.get('htmlLink')}"
