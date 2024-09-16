@@ -38,7 +38,7 @@ def get_calendar_service():
     service = build('calendar', 'v3', credentials=creds)
     return service
 
-service = get_calendar_service()
+
 
 def format_event_time(event_time_str, timezone_str):
     event_time = datetime.fromisoformat(event_time_str)
@@ -95,6 +95,7 @@ class ListEventsTool(BaseTool):
         print(colored(f"Querying Google Calendar API for events in calendar '{calendar_id}' from '{start_time}' to '{end_time}' with a maximum of {max_results} results in timezone '{timezone}'.", "white", "on_grey"))
 
         try:
+            service = get_calendar_service()
             events_result = service.events().list(calendarId=calendar_id, timeMin=start_time, timeMax=end_time,
                                                   maxResults=max_results, singleEvents=True,
                                                   orderBy='startTime').execute()

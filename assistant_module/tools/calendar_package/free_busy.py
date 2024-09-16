@@ -38,7 +38,7 @@ def get_calendar_service():
     service = build('calendar', 'v3', credentials=creds)
     return service
 
-service = get_calendar_service()
+
 
 class FreeBusyInput(BaseModel):
     calendar_id: str = Field(default='primary', description="ID of the calendar to check for free/busy times")
@@ -91,6 +91,8 @@ class FreeBusyTool(BaseTool):
                 "timeZone": timezone,
                 "items": [{"id": calendar_id}]
             }
+
+            service = get_calendar_service()
 
             freebusy_result = service.freebusy().query(body=request_body).execute()
 

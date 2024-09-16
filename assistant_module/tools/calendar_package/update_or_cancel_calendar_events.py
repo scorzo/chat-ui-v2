@@ -33,7 +33,7 @@ def get_calendar_service():
     service = build('calendar', 'v3', credentials=creds)
     return service
 
-service = get_calendar_service()
+
 
 class UpdateOrCancelEventInput(BaseModel):
     calendar_id: str = Field(default='primary', description="ID of the calendar")
@@ -60,6 +60,7 @@ class UpdateOrCancelEventTool(BaseTool):
     def update_or_cancel_event(self, calendar_id: str, event_id: str, update_body: Optional[Dict[str, Any]]) -> str:
         if update_body:
             try:
+                service = get_calendar_service()
                 updated_event = service.events().update(calendarId=calendar_id, eventId=event_id, body=update_body).execute()
                 return f"Event updated: {updated_event.get('htmlLink')}"
             except Exception as e:
