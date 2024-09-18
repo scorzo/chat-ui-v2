@@ -568,10 +568,4 @@ function App() {
     );
 }
 
-const AppWrapper = () => (
-    <CustomContextProvider>
-        <App />
-    </CustomContextProvider>
-);
-
-export default AppWrapper;
+export default App;
