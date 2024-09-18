@@ -7,8 +7,6 @@ import Threads from './components/Threads'; // Ensure you import the Threads com
 import NodeGraph from './components/NodeGraph'; // Update path if necessary
 import FloatingChatWindow from './components/FloatingChatWindow'; // Import FloatingChatWindow component
 
-import { CustomContextProvider } from './CustomContext'; // Import the CustomProvider and CustomContext
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faColumns } from '@fortawesome/free-solid-svg-icons';
 
