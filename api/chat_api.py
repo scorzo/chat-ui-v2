@@ -1,5 +1,4 @@
 import os
-import json
 import sys
 from datetime import datetime, timedelta
 from openai import OpenAI
@@ -9,7 +8,6 @@ import jwt
 import argparse
 from typing import Dict, Any
 import logging
-import colorlog
 from quart import Quart, request, jsonify, Response
 from quart_cors import cors
 
@@ -27,13 +25,15 @@ elif environment == 'kubernetes':
 
 # Add the parent directory of assistant_module to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from assistant_module.nodes import load_nodes, save_nodes
-from assistant_module.thread_store import store_thread, check_if_thread_exists, get_all_threads, name_thread
-from assistant_module.assistant_module import generate, create_new_thread, retrieve_existing_thread
-from assistant_module.tools.model_tools.home_tool import RedfinScraperTool
-from assistant_module.tools.model_tools.bills_management_sheet_replace_tool import FinanceManagementTool
-from assistant_module.tools.model_tools.bills_management_sheet_merge_tool import FinanceManagementMergeTool
+from api.assistant_module.nodes import load_nodes, save_nodes
+from api.assistant_module.assistant_module import check_if_thread_exists
+from api.assistant_module.thread_store import get_all_threads
+from api.assistant_module.assistant_module import generate, create_new_thread, retrieve_existing_thread
+from api.assistant_module.tools.model_tools.home_tool import RedfinScraperTool
+from api.assistant_module.tools.model_tools.bills_management_sheet_replace_tool import FinanceManagementTool
+from api.assistant_module.tools.model_tools.bills_management_sheet_merge_tool import FinanceManagementMergeTool
 
+from api.assistant_module.auth import get_jwt_payload
 
 
 
@@ -129,7 +129,7 @@ async def login():
     return jsonify({"token": jwt_token})
 
 
-from assistant_module.auth import get_jwt_payload
+
 
 @app.before_request
 async def authenticate():
@@ -552,7 +552,7 @@ async def thread_rename():
         new_thread_name = response.choices[0].message.content.strip()
 
         # Set the new thread name using name_thread function
-        from assistant_module.thread_store import name_thread
+        from api.assistant_module import name_thread
         name_thread(lookup_id, new_thread_name)
 
         return jsonify({
