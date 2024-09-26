@@ -19,14 +19,10 @@ spec:
           ports:
             - containerPort: 80
 ---
-# Frontend Service with OpenStack Load Balancer
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
-  annotations:
-    loadbalancer.openstack.org/protocol: "TCP"  # Protocol to use for load balancer
-    loadbalancer.openstack.org/connection-limit: "1000"  # Optional connection limit
 spec:
   selector:
     app: frontend
@@ -34,5 +30,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: LoadBalancer  # Automatically provisions an OpenStack Load Balancer
-  loadBalancerIP: 216.194.174.134  # Specify the external IP address for the Load Balancer
+  type: ClusterIP  # Changed to ClusterIP to work with Ingress

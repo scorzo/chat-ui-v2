@@ -1,0 +1,17 @@
+# Frontend Service with OpenStack Load Balancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  annotations:
+    loadbalancer.openstack.org/protocol: "TCP"  # Protocol to use for load balancer
+    loadbalancer.openstack.org/connection-limit: "1000"  # Optional connection limit
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer  # Automatically provisions an OpenStack Load Balancer
+  loadBalancerIP: $LOAD_BALANCER_IP  # Specify the external IP address for the Load Balancer
