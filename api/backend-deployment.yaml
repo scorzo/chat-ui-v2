@@ -29,6 +29,11 @@ spec:
                 secretKeyRef:
                   name: app-secrets  # Name of the secret
                   key: MONGO_DB     # Specific key in the secret
+            - name: TIMEZONE
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets  # Name of the secret
+                  key: TIMEZONE     # Specific key in the secret
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
