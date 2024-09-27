@@ -53,7 +53,7 @@ sync_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
 ### configure logging ###
 logger = logging.getLogger()
-logger.setLevel(logging.CRITICAL)
+logger.setLevel(logging.DEBUG)
 
 
 #### start session stuff ###
