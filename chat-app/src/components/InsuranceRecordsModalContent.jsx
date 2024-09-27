@@ -43,7 +43,7 @@ const InsuranceRecordsModalContent = ({ node, sunburstGraphRef, onRequestClose }
 
     const handleAddInsurance = async (type) => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_ENDPOINT}/nodes/${node.node_id}/${type}`, newInsurance);
+            const response = await axios.post(`${process.env.REACT_APP_API_ENDPOINT}/api/nodes/${node.node_id}/${type}`, newInsurance);
             switch (type) {
                 case 'house_insurance':
                     setHouseInsurance([...houseInsurance, response.data]);
@@ -81,7 +81,7 @@ const InsuranceRecordsModalContent = ({ node, sunburstGraphRef, onRequestClose }
         try {
             const type = editedInsurance.house_id ? 'house_insurance' : editedInsurance.vehicle_id ? 'car_insurance' : editedInsurance.rental_id ? 'renters_insurance' : editedInsurance.property_id ? 'flood_insurance' : editedInsurance.pet_id ? 'pet_insurance' : 'umbrella_insurance';
             const id = editedInsurance.house_id || editedInsurance.vehicle_id || editedInsurance.rental_id || editedInsurance.property_id || editedInsurance.pet_id || editedInsurance.policy_id;
-            const response = await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/nodes/${node.node_id}/${type}/${id}`, editedInsurance);
+            const response = await axios.put(`${process.env.REACT_APP_API_ENDPOINT}/api/nodes/${node.node_id}/${type}/${id}`, editedInsurance);
             const updatedList = (() => {
                 switch (type) {
                     case 'house_insurance':
@@ -111,7 +111,7 @@ const InsuranceRecordsModalContent = ({ node, sunburstGraphRef, onRequestClose }
 
     const handleDeleteInsurance = async (id, type) => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API_ENDPOINT}/nodes/${node.node_id}/${type}/${id}`);
+            await axios.delete(`${process.env.REACT_APP_API_ENDPOINT}/api/nodes/${node.node_id}/${type}/${id}`);
             const updatedList = (() => {
                 switch (type) {
                     case 'house_insurance':

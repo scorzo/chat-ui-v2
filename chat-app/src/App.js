@@ -72,7 +72,7 @@ function App() {
             }
 
             // Include the token in the Authorization header
-            const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/nodes`, {
+            const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/nodes`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ function App() {
             }
 
             // Include the token in the Authorization header
-            const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/threads_get_all`, {
+            const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/threads_get_all`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ function App() {
         }
 
         // Include the token in the Authorization header
-        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/thread_create`, {
+        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/thread_create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ function App() {
         }
 
         // Construct the API URL
-        const apiUrl = `${process.env.REACT_APP_API_ENDPOINT}/thread_messages_get?lookup_id=${threadLookupId}`;
+        const apiUrl = `${process.env.REACT_APP_API_ENDPOINT}/api/thread_messages_get?lookup_id=${threadLookupId}`;
 
         // Include the token in the Authorization header
         const response = await fetch(apiUrl, {
@@ -234,7 +234,7 @@ function App() {
                 }
 
                 // Include the token in the Authorization header
-                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/chat`, {
+                const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/chat`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -303,7 +303,7 @@ function App() {
                         }
 
                         // Include the token in the Authorization header
-                        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/thread_rename`, {
+                        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/thread_rename`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -355,7 +355,7 @@ function App() {
             if (idToken) {
                 // Send the ID token to your backend for validation
                 console.log('Sending ID token to backend for validation...');
-                const backendResponse = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/login`, {
+                const backendResponse = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

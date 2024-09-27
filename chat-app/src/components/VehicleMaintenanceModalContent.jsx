@@ -37,7 +37,7 @@ const VehicleMaintenanceModalContent = ({ node, sunburstGraphRef, onRequestClose
 
     const handleAddVehicle = async () => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_ENDPOINT}/nodes/${node.node_id}/vehicles`, newVehicle);
+            const response = await axios.post(`${process.env.REACT_APP_API_ENDPOINT}/api/nodes/${node.node_id}/vehicles`, newVehicle);
             setVehicles([...vehicles, response.data]);
             setNewVehicle({});
         } catch (error) {

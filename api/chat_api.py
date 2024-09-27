@@ -109,7 +109,7 @@ def generate_jwt(user_info):
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 async def login():
     """
     Handle user login by validating Google token and generating JWT.
@@ -153,7 +153,7 @@ async def authenticate():
 
 #### start misc API endpoints ###
 
-@app.route('/scrape_redfin', methods=['POST'])
+@app.route('/api/scrape_redfin', methods=['POST'])
 async def scrape_redfin():
     try:
         data = await request.json
@@ -176,7 +176,7 @@ async def scrape_redfin():
         logging.exception("An error occurred while updating data.")
         return jsonify({"success": False, "message": str(e)}), 500
 
-@app.route('/sheet_replace_finance_data', methods=['POST'])
+@app.route('/api/sheet_replace_finance_data', methods=['POST'])
 async def read_finance_data():
     try:
         data = await request.json
@@ -198,7 +198,7 @@ async def read_finance_data():
         logging.exception("An error occurred while retrieving finance data.")
         return jsonify({"success": False, "message": str(e)}), 500
 
-@app.route('/merge_finance_data', methods=['POST'])
+@app.route('/api/merge_finance_data', methods=['POST'])
 async def merge_finance_data():
     try:
         data = await request.json
@@ -249,7 +249,7 @@ def get_nodes_for_tool() -> Dict[str, Any]:
         logging.debug("Nodes loaded successfully.")
     return nodes
 
-@app.route('/nodes', methods=['GET'])
+@app.route('/api/nodes', methods=['GET'])
 async def get_nodes():
     logging.info("Received request for /nodes endpoint.")
     nodes, status_code = load_nodes()
@@ -259,7 +259,7 @@ async def get_nodes():
         logging.debug("Nodes loaded successfully.")
     return jsonify(nodes), status_code
 
-@app.route('/nodes/<node_id>', methods=['GET'])
+@app.route('/api/nodes/<node_id>', methods=['GET'])
 async def get_node(node_id):
     nodes, status_code = load_nodes()
     node = find_node_by_id(nodes, node_id)
@@ -267,7 +267,7 @@ async def get_node(node_id):
         return jsonify({'error': 'Node not found'}), 404
     return jsonify(node), status_code
 
-@app.route('/nodes', methods=['POST'])
+@app.route('/api/nodes', methods=['POST'])
 async def create_node():
     nodes, status_code = load_nodes()
     if status_code != 200:
@@ -289,7 +289,7 @@ async def create_node():
     save_nodes(nodes)
     return jsonify(new_node), 201
 
-@app.route('/nodes/<node_id>', methods=['PUT'])
+@app.route('/api/nodes/<node_id>', methods=['PUT'])
 async def update_node(node_id):
     nodes, status_code = load_nodes()
     if status_code != 200:
@@ -305,7 +305,7 @@ async def update_node(node_id):
     save_nodes(nodes)
     return jsonify(node)
 
-@app.route('/nodes/<node_id>', methods=['DELETE'])
+@app.route('/api/nodes/<node_id>', methods=['DELETE'])
 async def delete_node(node_id):
     nodes, status_code = load_nodes()
     if status_code != 200:
@@ -327,7 +327,7 @@ async def delete_node(node_id):
     return jsonify({'message': 'Node deleted'})
 
 # modal household management endpoints
-@app.route('/nodes/<node_id>/tasks', methods=['POST'])
+@app.route('/api/nodes/<node_id>/tasks', methods=['POST'])
 async def add_task(node_id):
     nodes, status_code = load_nodes()
     if status_code != 200:
@@ -345,7 +345,7 @@ async def add_task(node_id):
     save_nodes(nodes)
     return jsonify(new_task), 201
 
-@app.route('/nodes/<node_id>/tasks/<task_id>', methods=['PUT'])
+@app.route('/api/nodes/<node_id>/tasks/<task_id>', methods=['PUT'])
 async def update_task(node_id, task_id):
     nodes, status_code = load_nodes()
     if status_code != 200:
@@ -368,7 +368,7 @@ async def update_task(node_id, task_id):
     save_nodes(nodes)
     return jsonify(task)
 
-@app.route('/nodes/<node_id>/tasks/<task_id>', methods=['DELETE'])
+@app.route('/api/nodes/<node_id>/tasks/<task_id>', methods=['DELETE'])
 async def delete_task(node_id, task_id):
     nodes, status_code = load_nodes()
     if status_code != 200:
@@ -492,7 +492,7 @@ async def print_thread_messages_no_formatting(lookup_id):
 
     return message_list
 
-@app.route('/threads_get_all', methods=['GET'])
+@app.route('/api/threads_get_all', methods=['GET'])
 async def threads_get_all():
     try:
         all_threads = get_all_threads()
@@ -500,7 +500,7 @@ async def threads_get_all():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/thread_create', methods=['POST'])
+@app.route('/api/thread_create', methods=['POST'])
 async def thread_create_api():
     lookup_id, thread_info, thread = await create_new_thread()
     if lookup_id is None or thread_info is None or thread.id is None:
@@ -513,7 +513,7 @@ async def thread_create_api():
         "thread_name": thread_info['thread_name']
     })
 
-@app.route('/thread_rename', methods=['POST'])
+@app.route('/api/thread_rename', methods=['POST'])
 async def thread_rename():
     try:
         data = await request.json
@@ -567,7 +567,7 @@ async def thread_rename():
 
 
 
-@app.route('/thread_messages_get', methods=['GET'])
+@app.route('/api/thread_messages_get', methods=['GET'])
 async def thread_messages_get():
     lookup_id = request.args.get('lookup_id')
     messages = await print_thread_messages_no_formatting(lookup_id)
@@ -576,7 +576,7 @@ async def thread_messages_get():
 # API ENDPOINTS - THREADS END
 
 
-@app.route('/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 async def chat():
     data = await request.json
     user_query = data.get("query", "")

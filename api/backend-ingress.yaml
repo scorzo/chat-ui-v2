@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"  # Redirect HTTP to HTTPS
+spec:
+  tls:
+    - hosts:
+        - $DOMAIN_NAME
+      secretName: frontend-tls  # TLS secret for SSL termination
+  rules:
+    - host: $DOMAIN_NAME
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service  # Backend service name
+                port:
+                  number: 5001
