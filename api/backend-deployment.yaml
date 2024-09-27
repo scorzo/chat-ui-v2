@@ -34,6 +34,11 @@ spec:
                 secretKeyRef:
                   name: app-secrets  # Name of the secret
                   key: TIMEZONE     # Specific key in the secret
+            - name: MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets  # Name of the secret
+                  key: MODEL     # Specific key in the secret
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
