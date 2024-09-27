@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: frontend-ingress
   annotations:
-    kubernetes.io/ingress.class: "octavia"  # Specify Octavia Ingress Controller
+    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"  # Redirect HTTP to HTTPS
 spec:
   tls:
