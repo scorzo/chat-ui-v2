@@ -114,6 +114,7 @@ async def login():
     """
     Handle user login by validating Google token and generating JWT.
     """
+
     data = await request.get_json()
     google_token = data.get('id_token')
 
@@ -137,7 +138,7 @@ async def authenticate():
     if request.method == "OPTIONS":
         return  # No need to authenticate OPTIONS requests
 
-    open_routes = ['/login', '/signup']
+    open_routes = ['/api/login', '/api/signup']
 
     if request.path in open_routes:
         return  # Skip authentication for open routes
