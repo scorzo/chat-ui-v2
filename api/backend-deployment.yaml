@@ -24,6 +24,11 @@ spec:
                 secretKeyRef:
                   name: app-secrets  # Name of the secret
                   key: MONGO_URI     # Specific key in the secret
+            - name: MONGO_DB
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets  # Name of the secret
+                  key: MONGO_DB     # Specific key in the secret
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
