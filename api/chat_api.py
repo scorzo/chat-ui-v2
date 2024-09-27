@@ -18,10 +18,6 @@ environment = os.getenv('ENVIRONMENT', 'local')
 
 if environment == 'local':
     load_dotenv('.env.local')
-elif environment == 'docker':
-    load_dotenv('.env.local-docker')
-elif environment == 'kubernetes':
-    load_dotenv('.env.kubernetes')
 
 # Add the parent directory of assistant_module to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
