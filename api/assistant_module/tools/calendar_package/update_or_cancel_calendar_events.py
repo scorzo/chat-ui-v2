@@ -1,11 +1,6 @@
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import BaseTool
 from typing import Optional, Type, Dict, Any
-import os
-import pickle
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
 import asyncio
 
 from langchain.callbacks.manager import (
@@ -13,26 +8,9 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 
-SCOPES = ['https://www.googleapis.com/auth/calendar']
-CREDENTIALS_FILE = 'client_secret.json'
 CALENDAR_ID = 'primary'
 
-def get_calendar_service():
-    creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-    service = build('calendar', 'v3', credentials=creds)
-    return service
-
+from api.assistant_module.google_service import get_google_service
 
 
 class UpdateOrCancelEventInput(BaseModel):
@@ -59,7 +37,7 @@ class UpdateOrCancelEventTool(BaseTool):
 
     def update_or_cancel_event(self, calendar_id: str, event_id: str, update_body: Optional[Dict[str, Any]]) -> str:
         try:
-            service = get_calendar_service()
+            service = get_google_service('calendar','v3')
             if update_body:
                 updated_event = service.events().update(calendarId=calendar_id, eventId=event_id, body=update_body).execute()
                 return f"Event updated: {updated_event.get('htmlLink')}"

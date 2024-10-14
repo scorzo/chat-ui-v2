@@ -2,11 +2,6 @@ from datetime import datetime
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import BaseTool
 from typing import Optional, Type
-import os
-import pickle
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
 
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
@@ -15,30 +10,9 @@ from langchain.callbacks.manager import (
 
 import asyncio
 
-
-SCOPES = ['https://www.googleapis.com/auth/calendar']
-CREDENTIALS_FILE = 'client_secret.json'
 CALENDAR_ID = 'primary'
 
-def get_calendar_service():
-    creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    if not creds or not creds.valid:
-        try:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                raise Exception("Token is invalid, forcing new OAuth flow.")
-        except Exception as e:
-            print(f"Refreshing token failed: {e}. Starting OAuth flow.")
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-    service = build('calendar', 'v3', credentials=creds)
-    return service
+from api.assistant_module.google_service import get_google_service
 
 
 
@@ -85,7 +59,7 @@ class AddCalendarEventTool(BaseTool):
         }
         try:
             # Get calendar service within the method
-            service = get_calendar_service()
+            service = get_google_service('calendar','v3')
 
             print(f"Created event '{event_summary}' at '{event_location}' starting from {start_time} to {end_time} in time zone {start_time_zone}.")
             event_result = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()

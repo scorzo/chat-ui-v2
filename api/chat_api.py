@@ -2,8 +2,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from openai import OpenAI
-from google.auth.transport import requests
-from google.oauth2 import id_token
+import requests
 import jwt
 import argparse
 from typing import Dict, Any
@@ -12,6 +11,14 @@ from quart import Quart, request, jsonify, Response
 from quart_cors import cors
 
 from dotenv import load_dotenv
+
+import pickle
+import os
+from google.oauth2.credentials import Credentials
+
+SCOPES = ['https://www.googleapis.com/auth/calendar']
+CREDENTIALS_FILE = 'client_secret.json'
+
 
 # Determine the environment and load the corresponding .env file
 environment = os.getenv('ENVIRONMENT', 'local')
@@ -28,6 +35,8 @@ from api.assistant_module.assistant_module import generate, create_new_thread, r
 from api.assistant_module.tools.model_tools.home_tool import RedfinScraperTool
 from api.assistant_module.tools.model_tools.bills_management_sheet_replace_tool import FinanceManagementTool
 from api.assistant_module.tools.model_tools.bills_management_sheet_merge_tool import FinanceManagementMergeTool
+
+from api.assistant_module.thread_store import name_thread
 
 from api.assistant_module.auth import get_jwt_payload
 
@@ -55,44 +64,6 @@ logger.setLevel(logging.DEBUG)
 #### start session stuff ###
 
 
-def verify_google_token(token):
-    """
-    Verifies the Google ID token with Google and returns user information if valid.
-    """
-    try:
-        print("Starting verification of Google ID token...")
-
-        # Verify the token and extract the user's information
-        print(f"Verifying token: {token[:10]}... (truncated for security)")
-        client_id = os.environ['GOOGLE_CLIENT_ID']
-        print(f"Using Google Client ID: {client_id}")
-
-        id_info = id_token.verify_oauth2_token(token, requests.Request(), client_id)
-
-        print("Token verified successfully. Extracted user information:")
-        print(f"User ID: {id_info['sub']}")
-        print(f"Email: {id_info['email']}")
-        print(f"Name: {id_info.get('name')}")
-
-        # The ID token is valid; you can trust this user's identity
-        return {
-            "user_id": id_info['sub'],
-            "email": id_info['email'],
-            "name": id_info.get('name')
-        }
-    except ValueError as e:
-        # Invalid token
-        print(f"Token verification failed: {e}")
-        return None
-    except KeyError as e:
-        # Missing expected data in the token
-        print(f"KeyError during token verification: {e}")
-        return None
-    except Exception as e:
-        # General error handling
-        print(f"An unexpected error occurred during token verification: {e}")
-        return None
-
 def generate_jwt(user_info):
     """
     Generates a JWT for the authenticated user.
@@ -108,22 +79,72 @@ def generate_jwt(user_info):
 @app.route('/api/login', methods=['POST'])
 async def login():
     """
-    Handle user login by validating Google token and generating JWT.
+    Handle user login by validating Google access token, generating JWT,
+    and storing the access token and credentials for future use.
     """
-
     data = await request.get_json()
-    google_token = data.get('id_token')
+    access_token = data.get('access_token')
 
-    if not google_token:
-        return jsonify({"error": "Missing id_token"}), 400
+    if not access_token:
+        return jsonify({"error": "Missing access_token"}), 400
 
-    user_info = verify_google_token(google_token)
+    # Retrieve user info from Google using access_token
+    user_info = get_user_info(access_token)
     if not user_info:
-        return jsonify({"error": "Invalid token"}), 401
+        return jsonify({"error": "Invalid access token"}), 401
 
     # Generate and return the JWT
     jwt_token = generate_jwt(user_info)
+
+    # Save the credentials to token.pickle
+    save_credentials(access_token)
+
     return jsonify({"token": jwt_token})
+
+def save_credentials(access_token):
+    """
+    Save Google credentials to a file for future API calls.
+    """
+    creds = Credentials(token=access_token, scopes=SCOPES)
+
+    # Check if a refresh token is available in the request (optional)
+    # You can modify this if you're also handling the refresh token in your flow
+
+    # Save the credentials to 'token.pickle' for later use
+    with open('token.pickle', 'wb') as token_file:
+        pickle.dump(creds, token_file)
+
+    print("Credentials saved to token.pickle")
+def get_user_info(access_token):
+    """
+    Fetches user info from Google API using access token.
+    """
+    try:
+        print("Fetching user info from Google...")
+
+        # Send a request to Google's user info endpoint
+        user_info_endpoint = f"https://www.googleapis.com/oauth2/v1/userinfo?access_token={access_token}"
+        response = requests.get(user_info_endpoint, headers={
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/json',
+        })
+
+        if response.status_code != 200:
+            print(f"Failed to fetch user info: {response.status_code}")
+            return None
+
+        user_data = response.json()
+        print(f"User info: {user_data}")
+
+        # Return the relevant user data
+        return {
+            "user_id": user_data.get('id'),
+            "email": user_data.get('email'),
+            "name": user_data.get('name')
+        }
+    except Exception as e:
+        print(f"An error occurred while fetching user info: {e}")
+        return None
 
 
 
@@ -223,6 +244,7 @@ async def merge_finance_data():
 
 ### begin nodes management api
 
+# utility - used by node management endpoints
 def find_node_by_id(node, node_id):
     if node.get('node_id') == node_id:
         return node
@@ -236,7 +258,7 @@ def find_node_by_id(node, node_id):
 
 
 
-
+# unused ?
 def get_nodes_for_tool() -> Dict[str, Any]:
     nodes, status_code = load_nodes()
     if status_code != 200:
@@ -382,7 +404,7 @@ async def delete_task(node_id, task_id):
     save_nodes(nodes)
     return jsonify({'message': 'Task deleted'})
 
-### end nodes management api
+### end household management node tasks api
 
 # API ENDPOINTS - THREADS BEGIN
 
@@ -549,7 +571,6 @@ async def thread_rename():
         new_thread_name = response.choices[0].message.content.strip()
 
         # Set the new thread name using name_thread function
-        from api.assistant_module import name_thread
         name_thread(lookup_id, new_thread_name)
 
         return jsonify({

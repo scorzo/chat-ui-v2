@@ -10,7 +10,10 @@ import FloatingChatWindow from './components/FloatingChatWindow'; // Import Floa
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faColumns } from '@fortawesome/free-solid-svg-icons';
 
-import { GoogleLogin, googleLogout } from '@react-oauth/google';
+//import { GoogleLogin, googleLogout } from '@react-oauth/google';
+import { useGoogleLogin, googleLogout } from '@react-oauth/google';
+
+
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 
 import { jwtDecode } from "jwt-decode";
@@ -27,6 +30,32 @@ function setActiveAssistantId(newAssistantId) {
     assistant_id = newAssistantId;
     console.log(`Updated assistant_id: ${assistant_id}`);
 }
+
+const MyGoogleLoginButton = ({ handleLoginSuccess }) => {
+    const login = useGoogleLogin({
+        onSuccess: handleLoginSuccess,  // Handle success
+        onError: (error) => console.error('Login failed:', error),  // Handle error
+        scope: 'openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/spreadsheets',  // Add Calendar and Sheets scopes
+    });
+
+    return (
+        <div className="login-google-container">
+            <button onClick={login} className="login-btn login-secondary login-google-sign-in">
+                <div className="login-google-logo">
+                    <img
+                        className="login-btn-logo"
+                        src="https://assets.getpostman.com/common-share/google-logo-icon-sign-in.svg"
+                        width="16px"
+                        height="16px"
+                        alt="Google Logo"
+                    />
+                </div>
+                <div className="login-google-text">Sign In with Google</div>
+            </button>
+        </div>
+    );
+};
+
 
 const Sidebar = ({ position, content, isCollapsed, toggleSidebar, createNewThread, fetchThreadMessages, setMessages }) => (
     <div className={`sidebar ${position} ${isCollapsed ? 'collapsed' : ''}`}>
@@ -62,6 +91,13 @@ function App() {
     const [user, setUser] = useState(null);
     const [menuVisible, setMenuVisible] = useState(false); // Manage visibility of preferences menu
     const sunburstGraphRef = useRef(); // Add a reference for SunburstGraph
+
+    useEffect(() => {
+        // Set a unique name for the app window
+        if (!window.name) {
+            window.name = "AgentWindow";
+        }
+    }, []);
 
     const fetchNodesData = async () => {
         try {
@@ -345,23 +381,23 @@ function App() {
 
     const handleLoginSuccess = async (response) => {
         try {
-            // Log the entire response object to inspect its structure
-            console.log('Full login response object:', response);
+            // Extract access token (for authorization)
+            const accessToken = response.access_token || null;
+            console.log('Extracted Access Token:', accessToken);
 
-            // Check possible locations for ID token and user data
-            const idToken = response.credential || response.tokenId || null;
-            console.log('Extracted ID token:', idToken);
-
-            if (idToken) {
-                // Send the ID token to your backend for validation
-                console.log('Sending ID token to backend for validation...');
+            if (accessToken) {
+                // Send the access token to your backend for validation
+                console.log('Sending access token to backend for validation...');
                 const backendResponse = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ id_token: idToken }),
+                    body: JSON.stringify({
+                        access_token: accessToken, // Send access token for validation
+                    }),
                 });
+
                 console.log('Backend response status:', backendResponse.status);
 
                 if (!backendResponse.ok) {
@@ -390,18 +426,17 @@ function App() {
                 };
                 console.log('User data extracted from JWT:', userData);
 
-                setIsLoggedIn(true);
-                setUser(userData);  // Update state with user info
+                setIsLoggedIn(true);  // Update the login state
+                setUser(userData);     // Update the user information state
                 console.log('Login state updated to true.');
             } else {
-                console.warn('ID token not found in response.');
+                console.warn('Access token not found in response.');
             }
-
         } catch (error) {
             console.error('Login failed:', error);
-            // Handle login failure (e.g., show a notification to the user)
         }
     };
+
 
     const handleLogout = () => {
         // 1. Perform Google logout
@@ -501,16 +536,7 @@ function App() {
                         <p className="login-text-center login-text-subdued">or</p>
 
                         <div className="login-google-container">
-                            <GoogleLogin
-                                onSuccess={handleLoginSuccess}
-                                onError={(error) => console.error('Login failed:', error)}
-                                className="login-btn login-secondary login-google-sign-in"
-                            >
-                                <div className="login-google-logo">
-                                    <img className="login-btn-logo" src="https://assets.getpostman.com/common-share/google-logo-icon-sign-in.svg" width="16px" height="16px" alt="Google Logo" />
-                                </div>
-                                <div className="login-google-text">Sign In with Google</div>
-                            </GoogleLogin>
+                            <MyGoogleLoginButton handleLoginSuccess={handleLoginSuccess} />
                         </div>
 
                     </div>

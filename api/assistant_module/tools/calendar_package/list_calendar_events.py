@@ -4,10 +4,6 @@ from langchain.tools import BaseTool
 from typing import Optional, Type
 import pytz
 import os
-import pickle
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
 import sys
 import traceback
 import json
@@ -19,25 +15,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 
-SCOPES = ['https://www.googleapis.com/auth/calendar']
-CREDENTIALS_FILE = 'client_secret.json'
-
-def get_calendar_service():
-    creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-    service = build('calendar', 'v3', credentials=creds)
-    return service
-
+from api.assistant_module.google_service import get_google_service
 
 
 def format_event_time(event_time_str, timezone_str):
@@ -95,7 +73,7 @@ class ListEventsTool(BaseTool):
         print(colored(f"Querying Google Calendar API for events in calendar '{calendar_id}' from '{start_time}' to '{end_time}' with a maximum of {max_results} results in timezone '{timezone}'.", "white", "on_grey"))
 
         try:
-            service = get_calendar_service()
+            service = get_google_service('calendar','v3')
             events_result = service.events().list(calendarId=calendar_id, timeMin=start_time, timeMax=end_time,
                                                   maxResults=max_results, singleEvents=True,
                                                   orderBy='startTime').execute()

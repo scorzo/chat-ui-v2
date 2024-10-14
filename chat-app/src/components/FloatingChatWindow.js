@@ -61,6 +61,7 @@ const FloatingChatWindow = ({ handleSendMessage, messages, sunburstGraphRef, han
                     <FontAwesomeIcon icon={faUserCircle} size="2x" onClick={toggleMenu} className="user-icon" />
                     {menuVisible && (
                         <div className="preferences-menu">
+                            <button onClick={() => window.open('http://localhost:3001/', 'AdminConsoleWindow')} className="menu-item">Admin Console</button>
                             <button onClick={handleLogout} className="menu-item">Log out</button>
                         </div>
                     )}
